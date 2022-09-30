@@ -156,11 +156,18 @@ public class TestRouteModelResource extends BaseJerseyTest {
                         .param("steps", stepsData)), JsonObject.class);
         String routeModelId = json.getString("id");
 
-        // Get all route models
+        // Get the route models
         json = target().path("/routemodel/" + routeModelId)
                 .request()
                 .cookie(TokenBasedSecurityFilter.COOKIE_NAME, adminToken)
                 .get(JsonObject.class);
         Assert.assertEquals(stepsData, json.getString("steps"));
+
+        // Delete the route model
+        target().path("/routemodel/" + routeModelId)
+                .request()
+                .cookie(TokenBasedSecurityFilter.COOKIE_NAME, adminToken)
+                .delete(JsonObject.class);
+    }
     }
 }

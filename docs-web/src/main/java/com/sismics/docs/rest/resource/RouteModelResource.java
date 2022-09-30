@@ -198,17 +198,26 @@ public class RouteModelResource extends BaseResource {
                 // Transitions
                 List<RouteStepTransition> transitionsNames = Lists.newArrayList();
                 JsonArray transitions = step.getJsonArray("transitions");
-                if (type == RouteStepType.VALIDATE) {
-                    if (transitions.size() != 1) {
-                        throw new ClientException("ValidationError", "VALIDATE steps should have one transition");
-                    }
-                    transitionsNames.add(RouteStepTransition.VALIDATED);
-                } else if (type == RouteStepType.APPROVE) {
-                    if (transitions.size() != 2) {
-                        throw new ClientException("ValidationError", "APPROVE steps should have two transition");
-                    }
-                    transitionsNames.add(RouteStepTransition.APPROVED);
-                    transitionsNames.add(RouteStepTransition.REJECTED);
+                switch (type) {
+                    case VALIDATE:
+                        if (transitions.size() != 1) {
+                            throw new ClientException("ValidationError", "VALIDATE steps should have one transition");
+                        }
+                        transitionsNames.add(RouteStepTransition.VALIDATED);
+                        break;
+                    case APPROVE:
+                        if (transitions.size() != 2) {
+                            throw new ClientException("ValidationError", "APPROVE steps should have two transition");
+                        }
+                        transitionsNames.add(RouteStepTransition.APPROVED);
+                        transitionsNames.add(RouteStepTransition.REJECTED);
+                        break;
+                    case RESUME_REVIEW:
+                        if (transitions.size() != 1) {
+                            throw new ClientException("ValidationError", "RESUME_REVIEW steps should have one transition");
+                        }
+                        transitionsNames.add(RouteStepTransition.REVIEWED);
+                        break;
                 }
 
                 for (int j = 0; j < transitions.size(); j++) {

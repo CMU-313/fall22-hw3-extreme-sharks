@@ -19,5 +19,10 @@ public enum RouteStepTransition {
     /**
      * Route step validated.
      */
-    VALIDATED
+    VALIDATED,
+
+    /**
+     * When a resume is reviewed.
+     */
+    REVIEWED,
 }

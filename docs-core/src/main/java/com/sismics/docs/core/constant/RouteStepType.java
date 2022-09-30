@@ -14,5 +14,10 @@ public enum RouteStepType {
     /**
      * Simple validation step, no possible choice.
      */
-    VALIDATE
+    VALIDATE,
+
+    /**
+     * The reviewer gives a rating for several dimensions of a resume.
+     */
+    RESUME_REVIEW,
 }

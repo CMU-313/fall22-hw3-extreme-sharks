@@ -84,7 +84,7 @@ public class RouteModelResource extends BaseResource {
      * @apiGroup RouteModel
      * @apiParam {String} name Route model name
      * @apiParam {Object[]} steps Steps data in JSON
-     * @apiParam {String} steps.type The type of the step ("APPROVE” or "VALIDATE")
+     * @apiParam {String} steps.type The type of the step ("APPROVE”, "VALIDATE", or "RESUME_REVIEW")
      * @apiParam {Object[]} steps.transitions The transitions of the step
      * @apiParam {String} steps.transitions.name The name of the transition ("APPROVED", "REJECTED" or "VALIDATED")
      * @apiParam {Object[]} steps.transitions.actions The actions taken when this transition occurs
@@ -278,7 +278,7 @@ public class RouteModelResource extends BaseResource {
      * @apiGroup RouteModel
      * @apiParam {String} name Route model name
      * @apiParam {Object[]} steps Steps data in JSON
-     * @apiParam {String} steps.type The type of the step ("APPROVE” or "VALIDATE")
+     * @apiParam {String} steps.type The type of the step ("APPROVE”, "VALIDATE", or "RESUME_REVIEW")
      * @apiParam {Object[]} steps.transitions The transitions of the step
      * @apiParam {String} steps.transitions.name The name of the transition ("APPROVED", "REJECTED" or "VALIDATED")
      * @apiParam {Object[]} steps.transitions.actions The actions taken when this transition occurs
@@ -379,7 +379,7 @@ public class RouteModelResource extends BaseResource {
      * @apiSuccess {String} name Route model name
      * @apiSuccess {String} create_date Create date (timestamp)
      * @apiSuccess {String} steps Steps data in JSON (!)
-     * @apiSuccess {String} steps.type The type of the step ("APPROVE” or "VALIDATE")
+     * @apiSuccess {String} steps.type The type of the step ("APPROVE”, "VALIDATE", or "RESUME_REVIEW")
      * @apiSuccess {Object[]} steps.transitions The transitions of the step
      * @apiSuccess {String} steps.transitions.name The name of the transition ("APPROVED", "REJECTED" or "VALIDATED")
      * @apiSuccess {Object[]} steps.transitions.actions The actions taken when this transition occurs

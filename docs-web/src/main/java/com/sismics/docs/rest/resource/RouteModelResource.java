@@ -36,8 +36,8 @@ public class RouteModelResource extends BaseResource {
     /**
      * Returns the list of all route models.
      *
-     * @api {get} /routemodel Get route models
-     * @apiName GetRouteModel
+     * @api {get} /routemodel Get all route models
+     * @apiName GetRouteModels
      * @apiGroup RouteModel
      * @apiParam {Number} sort_column Column index to sort on
      * @apiParam {Boolean} asc If true, sort in ascending order

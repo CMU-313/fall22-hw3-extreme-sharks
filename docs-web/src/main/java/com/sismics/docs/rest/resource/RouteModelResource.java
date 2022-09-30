@@ -86,7 +86,7 @@ public class RouteModelResource extends BaseResource {
      * @apiParam {Object[]} steps Steps data in JSON
      * @apiParam {String} steps.type The type of the step ("APPROVE”, "VALIDATE", or "RESUME_REVIEW")
      * @apiParam {Object[]} steps.transitions The transitions of the step
-     * @apiParam {String} steps.transitions.name The name of the transition ("APPROVED", "REJECTED" or "VALIDATED")
+     * @apiParam {String} steps.transitions.name The name of the transition ("APPROVED", "REJECTED", "VALIDATED" or "REVIEWED")
      * @apiParam {Object[]} steps.transitions.actions The actions taken when this transition occurs
      * @apiParam {String} steps.transitions.actions.type The type of the action ("ADD_TAG" or "REMOVE_TAG")
      * @apiParam {String} steps.transitions.actions.tag The ID of the tag that is affected by the action
@@ -280,7 +280,7 @@ public class RouteModelResource extends BaseResource {
      * @apiParam {Object[]} steps Steps data in JSON
      * @apiParam {String} steps.type The type of the step ("APPROVE”, "VALIDATE", or "RESUME_REVIEW")
      * @apiParam {Object[]} steps.transitions The transitions of the step
-     * @apiParam {String} steps.transitions.name The name of the transition ("APPROVED", "REJECTED" or "VALIDATED")
+     * @apiParam {String} steps.transitions.name The name of the transition ("APPROVED", "REJECTED", "VALIDATED" or "REVIEWED")
      * @apiParam {Object[]} steps.transitions.actions The actions taken when this transition occurs
      * @apiParam {String} steps.transitions.actions.type The type of the action ("ADD_TAG" or "REMOVE_TAG")
      * @apiParam {String} steps.transitions.actions.tag The ID of the tag that is affected by the action

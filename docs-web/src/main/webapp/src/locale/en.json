@@ -341,7 +341,7 @@
         "type": "Step type",
         "type_approve": "Approve",
         "type_validate": "Validate",
-        "type_resumereview": "Resume Review",
+        "type_resume_review": "Resume Review",
         "target": "Assigned to",
         "target_help": "<strong>Approve:</strong> Accept or reject the review<br/><strong>Validate:</strong> Review and continue the workflow<br/><strong>Resume Review:</strong> Review and continue the workflow",
         "add_step": "Add a workflow step",
@@ -566,12 +566,14 @@
   },
   "workflow_type": {
     "VALIDATE": "Validation",
-    "APPROVE": "Approbation"
+    "APPROVE": "Approbation", 
+    "RESUME_REVIEW": "Resume Review"
   },
   "workflow_transition": {
     "APPROVED": "Approved",
     "REJECTED": "Rejected",
-    "VALIDATED": "Validated"
+    "VALIDATED": "Validated",
+    "RESUME_REVIEW": "Resume Review"
   },
   "validation": {
     "required": "Required",

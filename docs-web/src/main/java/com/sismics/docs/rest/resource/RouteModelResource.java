@@ -36,8 +36,8 @@ public class RouteModelResource extends BaseResource {
     /**
      * Returns the list of all route models.
      *
-     * @api {get} /routemodel Get route models
-     * @apiName GetRouteModel
+     * @api {get} /routemodel Get all route models
+     * @apiName GetRouteModels
      * @apiGroup RouteModel
      * @apiParam {Number} sort_column Column index to sort on
      * @apiParam {Boolean} asc If true, sort in ascending order
@@ -83,7 +83,17 @@ public class RouteModelResource extends BaseResource {
      * @apiName PutRouteModel
      * @apiGroup RouteModel
      * @apiParam {String} name Route model name
-     * @apiParam {String} steps Steps data in JSON
+     * @apiParam {Object[]} steps Steps data in JSON
+     * @apiParam {String} steps.type The type of the step ("APPROVE”, "VALIDATE", or "RESUME_REVIEW")
+     * @apiParam {Object[]} steps.transitions The transitions of the step
+     * @apiParam {String} steps.transitions.name The name of the transition ("APPROVED", "REJECTED", "VALIDATED" or "REVIEWED")
+     * @apiParam {Object[]} steps.transitions.actions The actions taken when this transition occurs
+     * @apiParam {String} steps.transitions.actions.type The type of the action ("ADD_TAG" or "REMOVE_TAG")
+     * @apiParam {String} steps.transitions.actions.tag The ID of the tag that is affected by the action
+     * @apiParam {Object} steps.target The target of the step
+     * @apiParam {String} steps.target.name The name of the target (group name or username)
+     * @apiParam {String} steps.target.type "GROUP" or "USER"
+     * @apiParam {String} steps.name The name of the step
      * @apiSuccess {String} id Route model ID
      * @apiError (client) ForbiddenError Access denied
      * @apiError (client) ValidationError Validation error
@@ -267,7 +277,17 @@ public class RouteModelResource extends BaseResource {
      * @apiName PostRouteModel
      * @apiGroup RouteModel
      * @apiParam {String} name Route model name
-     * @apiParam {String} steps Steps data in JSON
+     * @apiParam {Object[]} steps Steps data in JSON
+     * @apiParam {String} steps.type The type of the step ("APPROVE”, "VALIDATE", or "RESUME_REVIEW")
+     * @apiParam {Object[]} steps.transitions The transitions of the step
+     * @apiParam {String} steps.transitions.name The name of the transition ("APPROVED", "REJECTED", "VALIDATED" or "REVIEWED")
+     * @apiParam {Object[]} steps.transitions.actions The actions taken when this transition occurs
+     * @apiParam {String} steps.transitions.actions.type The type of the action ("ADD_TAG" or "REMOVE_TAG")
+     * @apiParam {String} steps.transitions.actions.tag The ID of the tag that is affected by the action
+     * @apiParam {Object} steps.target The target of the step
+     * @apiParam {String} steps.target.name The name of the target (group name or username)
+     * @apiParam {String} steps.target.type "GROUP" or "USER"
+     * @apiParam {String} steps.name The name of the step
      * @apiSuccess {String} status Status OK
      * @apiError (client) ForbiddenError Access denied
      * @apiError (client) ValidationError Validation error
@@ -358,7 +378,17 @@ public class RouteModelResource extends BaseResource {
      * @apiSuccess {String} id Route model ID
      * @apiSuccess {String} name Route model name
      * @apiSuccess {String} create_date Create date (timestamp)
-     * @apiSuccess {String} steps Steps data in JSON
+     * @apiSuccess {String} steps Steps data in JSON (!)
+     * @apiSuccess {String} steps.type The type of the step ("APPROVE”, "VALIDATE", or "RESUME_REVIEW")
+     * @apiSuccess {Object[]} steps.transitions The transitions of the step
+     * @apiSuccess {String} steps.transitions.name The name of the transition ("APPROVED", "REJECTED" or "VALIDATED")
+     * @apiSuccess {Object[]} steps.transitions.actions The actions taken when this transition occurs
+     * @apiSuccess {String} steps.transitions.actions.type The type of the action ("ADD_TAG" or "REMOVE_TAG")
+     * @apiSuccess {String} steps.transitions.actions.tag The ID of the tag that is affected by the action
+     * @apiSuccess {Object} steps.target The target of the step
+     * @apiSuccess {String} steps.target.name The name of the target (group name or username)
+     * @apiSuccess {String} steps.target.type "GROUP" or "USER"
+     * @apiSuccess {String} steps.name The name of the step
      * @apiError (client) ForbiddenError Access denied
      * @apiError (client) NotFound Route model not found
      * @apiPermission admin

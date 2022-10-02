@@ -573,7 +573,7 @@
     "APPROVED": "Approved",
     "REJECTED": "Rejected",
     "VALIDATED": "Validated",
-    "RESUME_REVIEW": "Reviewed"
+    "REVIEWED": "Reviewed"
   },
   "validation": {
     "required": "Required",

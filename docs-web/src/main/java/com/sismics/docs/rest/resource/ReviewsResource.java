@@ -12,19 +12,19 @@ public class ReviewsResource {
     /**
      * Returns the reviews for a document.
      *
-     * @api {get} /reviews/:id Get a review
+     * @api {get} /reviews/:id Get the reviews for a document.
      * @apiName GetReview
      * @apiGroup Review
      * @apiParam {String} id Document ID
-     * @apiParam {Booleans} files If true includes files information
      * @apiSuccess {String} id ID
      * @apiSuccess {String} title Title
      * @apiSuccess {String} description Description
-     * @apiSuccess {Object[]} categories Categories
+     * @apiSuccess {Object[]} workflows The workflow array that shows all the workflows and reviews
+     * @apiSuccess {String} workflows.name The name of one of the workflows.
+     * @apiSuccess {Number[]} workflows.ratings The ratings array that contains all the ratings for a workflow on the document
+     * @apiSuccess {String[]} workflows.comments The comments array that contains all the comments for a workflow on the document
      * @apiSuccess {Object[]} ratings Ratings
-     * @apiSuccess {Number} reviewers_count Number of reviewers
-     * @apiError (client) NotFound Reviews not found
-     * @apiPermission none
+     * @apiPermission user
      * @apiVersion 1.5.0
      *
      * @param documentId Document ID

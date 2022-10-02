@@ -235,10 +235,10 @@ public class RouteResource extends BaseResource {
      * @apiSuccess {Number} routes.create_date Create date (timestamp)
      * @apiSuccess {Object[]} routes.steps Route steps
      * @apiSuccess {String} routes.steps.name Route step name
-     * @apiSuccess {String="APPROVE", "VALIDATE"} routes.steps.type Route step type
+     * @apiSuccess {String="APPROVE", "VALIDATE", "REVIEW"} routes.steps.type Route step type
      * @apiSuccess {String} routes.steps.comment Route step comment
      * @apiSuccess {Number} routes.steps.end_date Route step end date (timestamp)
-     * @apiSuccess {String="APPROVED","REJECTED","VALIDATED"} routes.steps.transition Route step transition
+     * @apiSuccess {String="APPROVED","REJECTED","VALIDATED", "REVIEWED"} routes.steps.transition Route step transition
      * @apiSuccess {Object} routes.steps.validator_username Validator username
      * @apiSuccess {Object} routes.steps.target Route step target
      * @apiSuccess {String} routes.steps.target.id Route step target ID

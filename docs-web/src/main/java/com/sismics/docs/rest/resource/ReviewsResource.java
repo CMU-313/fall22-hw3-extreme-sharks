@@ -21,7 +21,9 @@ public class ReviewsResource {
      * @apiSuccess {String} description Description
      * @apiSuccess {Object[]} workflows The workflow array that shows all the workflows and reviews
      * @apiSuccess {String} workflows.name The name of one of the workflows.
-     * @apiSuccess {Number[]} workflows.ratings The ratings array that contains all the ratings for a workflow on the document
+     * @apiSuccess {Object[]} workflows.ratings The ratings array that contains all the ratings for a workflow on the document
+     * @apiSuccess {String} workflows.ratings.category The category that a specific rating belongs to
+     * @apiSuccess {Number} workflows.ratings.value The value of a specific rating (Range: 1-5)
      * @apiSuccess {String[]} workflows.comments The comments array that contains all the comments for a workflow on the document
      * @apiSuccess {Object[]} ratings Ratings
      * @apiPermission user

@@ -1,5 +1,9 @@
 package com.sismics.docs.rest;
 
+import com.sismics.docs.core.dao.ReviewDao;
+import com.sismics.docs.core.model.jpa.Review;
+import com.sismics.docs.core.model.jpa.Route;
+import com.sismics.docs.core.model.jpa.RouteModel;
 import com.sismics.util.filter.TokenBasedSecurityFilter;
 import org.junit.Assert;
 import org.junit.Test;
@@ -10,6 +14,8 @@ import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.Form;
 import javax.ws.rs.core.Response;
 import java.util.Date;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Test the route resource.
@@ -17,6 +23,8 @@ import java.util.Date;
  * @author bgamard, Nicolas Ettlin
  */
 public class TestRouteResource extends BaseJerseyTest {
+    private String token = null;
+
     /**
      * Test the route resource.
      */
@@ -517,42 +525,25 @@ public class TestRouteResource extends BaseJerseyTest {
      */
     @Test
     public void testValidateRouteWithResumeReview() {
-        String adminToken = clientUtil.login("admin", "admin", false);
+        token = clientUtil.login("admin", "admin", false);
 
         // Setup: create some workflows
-        final String oneReviewStepConfig = "[{\"type\":\"RESUME_REVIEW\",\"transitions\":[{\"name\":\"REVIEWED\",\"actions\":[]}],\"target\":{\"name\":\"administrators\",\"type\":\"GROUP\"},\"name\":\"Please review the resume\"}]";
-        JsonObject json = target().path("/routemodel").request()
-                .cookie(TokenBasedSecurityFilter.COOKIE_NAME, adminToken)
-                .put(Entity.form(new Form()
-                        .param("name", "Single review workflow")
-                        .param("steps", oneReviewStepConfig)
-                ), JsonObject.class);
-        final String oneReviewStepRouteModelId = json.getString("id");
-        Assert.assertNotNull(oneReviewStepRouteModelId);
-
-        final String twoReviewStepsConfig = "[{\"type\":\"RESUME_REVIEW\",\"transitions\":[{\"name\":\"REVIEWED\",\"actions\":[]}],\"target\":{\"name\":\"administrators\",\"type\":\"GROUP\"},\"name\":\"Please review the resume for the first time\"},{\"type\":\"RESUME_REVIEW\",\"transitions\":[{\"name\":\"REVIEWED\",\"actions\":[]}],\"target\":{\"name\":\"administrators\",\"type\":\"GROUP\"},\"name\":\"Please review the resume for the second time\"}]";
-        json = target().path("/routemodel").request()
-                .cookie(TokenBasedSecurityFilter.COOKIE_NAME, adminToken)
-                .put(Entity.form(new Form()
-                        .param("name", "Two reviews workflow")
-                        .param("steps", twoReviewStepsConfig)
-                ), JsonObject.class);
-        final String twoReviewStepsRouteModelId = json.getString("id");
-        Assert.assertNotNull(twoReviewStepsRouteModelId);
-
-        final String noReviewStepsConfig = "[{\"type\":\"VALIDATE\",\"transitions\":[{\"name\":\"VALIDATED\",\"actions\":[]}],\"target\":{\"name\":\"administrators\",\"type\":\"GROUP\"},\"name\":\"Please validate\"}]";
-        json = target().path("/routemodel").request()
-                .cookie(TokenBasedSecurityFilter.COOKIE_NAME, adminToken)
-                .put(Entity.form(new Form()
-                        .param("name", "No reviews flow")
-                        .param("steps", noReviewStepsConfig)
-                ), JsonObject.class);
-        final String noReviewStepsRouteModelId = json.getString("id");
-        Assert.assertNotNull(noReviewStepsRouteModelId);
+        final String oneReviewStepRouteModelId = createRouteModel(
+            "Single review workflow",
+            "[{\"type\":\"RESUME_REVIEW\",\"transitions\":[{\"name\":\"REVIEWED\",\"actions\":[]}],\"target\":{\"name\":\"administrators\",\"type\":\"GROUP\"},\"name\":\"Please review the resume\"}]"
+        );
+        final String twoReviewStepsRouteModelId = createRouteModel(
+            "Two reviews workflow",
+            "[{\"type\":\"RESUME_REVIEW\",\"transitions\":[{\"name\":\"REVIEWED\",\"actions\":[]}],\"target\":{\"name\":\"administrators\",\"type\":\"GROUP\"},\"name\":\"Please review the resume for the first time\"},{\"type\":\"RESUME_REVIEW\",\"transitions\":[{\"name\":\"REVIEWED\",\"actions\":[]}],\"target\":{\"name\":\"administrators\",\"type\":\"GROUP\"},\"name\":\"Please review the resume for the second time\"}]"
+        );
+        final String noReviewStepsRouteModelId = createRouteModel(
+            "No reviews flow",
+            "[{\"type\":\"VALIDATE\",\"transitions\":[{\"name\":\"VALIDATED\",\"actions\":[]}],\"target\":{\"name\":\"administrators\",\"type\":\"GROUP\"},\"name\":\"Please validate\"}]"
+        );
 
         // Setup: create a document
-        json = target().path("/document").request()
-                .cookie(TokenBasedSecurityFilter.COOKIE_NAME, adminToken)
+        JsonObject json = target().path("/document").request()
+                .cookie(TokenBasedSecurityFilter.COOKIE_NAME, token)
                 .put(Entity.form(new Form()
                         .param("title", "Jane Doe")
                         .param("description", "")
@@ -563,102 +554,117 @@ public class TestRouteResource extends BaseJerseyTest {
         Assert.assertNotNull(documentId);
 
         // Test: do the simple workflow on this document
-        json = target().path("/route/start").request()
-                .cookie(TokenBasedSecurityFilter.COOKIE_NAME, adminToken)
-                .post(Entity.form(new Form()
-                        .param("documentId", documentId)
-                        .param("routeModelId", oneReviewStepRouteModelId)
-                ), JsonObject.class);
-        JsonObject step = json.getJsonObject("route_step");
-        Assert.assertEquals("Please review the resume", step.getString("name"));
-
-        json = target().path("/route/validate").request()
-                .cookie(TokenBasedSecurityFilter.COOKIE_NAME, adminToken)
-                .post(Entity.form(new Form()
-                        .param("documentId", documentId)
-                        .param("transition", "REVIEWED")
-                        .param("ratings", "[{\"category\":\"GRE\",\"value\":4},{\"category\":\"GPA\",\"value\":3.5},{\"category\":\"Skills\",\"value\":5},{\"category\":\"Experience\",\"value\":4.5},{\"category\":\"Extracurriculars\",\"value\":4}]")
-                ), JsonObject.class);
-        Assert.assertFalse(json.containsKey("route_step"));
+        startWorkflow(documentId, oneReviewStepRouteModelId);
+        validateWorkflowStep(
+            documentId,
+            "REVIEWED",
+            "[{\"category\":\"GRE\",\"value\":4},{\"category\":\"GPA\",\"value\":3.5},{\"category\":\"Skills\",\"value\":5},{\"category\":\"Experience\",\"value\":4.5},{\"category\":\"Extracurriculars\",\"value\":4}]"
+        );
 
         // Test: do the workflow with two review steps
-        json = target().path("/route/start").request()
-                .cookie(TokenBasedSecurityFilter.COOKIE_NAME, adminToken)
-                .post(Entity.form(new Form()
-                        .param("documentId", documentId)
-                        .param("routeModelId", twoReviewStepsRouteModelId)
-                ), JsonObject.class);
-        step = json.getJsonObject("route_step");
-        Assert.assertEquals("Please review the resume for the first time", step.getString("name"));
+        startWorkflow(documentId, twoReviewStepsRouteModelId);
+        validateWorkflowStep(
+            documentId,
+            "REVIEWED",
+            "[{\"category\":\"GRE\",\"value\":1},{\"category\":\"GPA\",\"value\":2},{\"category\":\"Skills\",\"value\":3},{\"category\":\"Experience\",\"value\":4},{\"category\":\"Extracurriculars\",\"value\":5}]"
+        );
 
-        json = target().path("/route/validate").request()
-                .cookie(TokenBasedSecurityFilter.COOKIE_NAME, adminToken)
-                .post(Entity.form(new Form()
-                        .param("documentId", documentId)
-                        .param("transition", "REVIEWED")
-                        .param("ratings", "[{\"category\":\"GRE\",\"value\":1},{\"category\":\"GPA\",\"value\":2},{\"category\":\"Skills\",\"value\":3},{\"category\":\"Experience\",\"value\":4},{\"category\":\"Extracurriculars\",\"value\":5}]")
-                ), JsonObject.class);
-        step = json.getJsonObject("route_step");
-        Assert.assertEquals("Please review the resume for the second time", step.getString("name"));
-
-        json = target().path("/route/validate").request()
-                .cookie(TokenBasedSecurityFilter.COOKIE_NAME, adminToken)
-                .post(Entity.form(new Form()
-                        .param("documentId", documentId)
-                        .param("transition", "REVIEWED")
-                        .param("ratings", "[{\"category\":\"GRE\",\"value\":5},{\"category\":\"GPA\",\"value\":4},{\"category\":\"Skills\",\"value\":3},{\"category\":\"Experience\",\"value\":2},{\"category\":\"Extracurriculars\",\"value\":1}]")
-                ), JsonObject.class);
-        Assert.assertFalse(json.containsKey("route_step"));
+        validateWorkflowStep(
+            documentId,
+            "REVIEWED",
+            "[{\"category\":\"GRE\",\"value\":5},{\"category\":\"GPA\",\"value\":4},{\"category\":\"Skills\",\"value\":3},{\"category\":\"Experience\",\"value\":2},{\"category\":\"Extracurriculars\",\"value\":1}]"
+        );
 
         // Test: do a non-review workflow
-        json = target().path("/route/start").request()
-                .cookie(TokenBasedSecurityFilter.COOKIE_NAME, adminToken)
-                .post(Entity.form(new Form()
-                        .param("documentId", documentId)
-                        .param("routeModelId", noReviewStepsRouteModelId)
-                ), JsonObject.class);
-        step = json.getJsonObject("route_step");
-        Assert.assertEquals("Please validate", step.getString("name"));
-
-        json = target().path("/route/validate").request()
-                .cookie(TokenBasedSecurityFilter.COOKIE_NAME, adminToken)
-                .post(Entity.form(new Form()
-                        .param("documentId", documentId)
-                        .param("transition", "VALIDATED")
-                ), JsonObject.class);
-        Assert.assertFalse(json.containsKey("route_step"));
+        startWorkflow(documentId, noReviewStepsRouteModelId);
+        validateWorkflowStep(documentId, "VALIDATED", null);
 
         // Test: start a review workflow without completing it
-        json = target().path("/route/start").request()
-                .cookie(TokenBasedSecurityFilter.COOKIE_NAME, adminToken)
-                .post(Entity.form(new Form()
-                        .param("documentId", documentId)
-                        .param("routeModelId", oneReviewStepRouteModelId)
-                ), JsonObject.class);
-        step = json.getJsonObject("route_step");
-        Assert.assertEquals("Please review the resume", step.getString("name"));
+        startWorkflow(documentId, oneReviewStepRouteModelId);
 
         // Test: verify that the reviews are in the database
         // @TODO
 
         // Tear down: delete the workflows
-        target().path("/routemodel/" + oneReviewStepRouteModelId)
-                .request()
-                .cookie(TokenBasedSecurityFilter.COOKIE_NAME, adminToken)
-                .delete(JsonObject.class);
-        target().path("/routemodel/" + twoReviewStepsRouteModelId)
-                .request()
-                .cookie(TokenBasedSecurityFilter.COOKIE_NAME, adminToken)
-                .delete(JsonObject.class);
-        target().path("/routemodel/" + noReviewStepsRouteModelId)
-                .request()
-                .cookie(TokenBasedSecurityFilter.COOKIE_NAME, adminToken)
-                .delete(JsonObject.class);
+        deleteRouteModel(oneReviewStepRouteModelId);
+        deleteRouteModel(twoReviewStepsRouteModelId);
+        deleteRouteModel(noReviewStepsRouteModelId);
 
         // Tear down: delete the document
         json = target().path("/document/" + documentId).request()
-                .cookie(TokenBasedSecurityFilter.COOKIE_NAME, adminToken)
+                .cookie(TokenBasedSecurityFilter.COOKIE_NAME, token)
                 .delete(JsonObject.class);
         Assert.assertEquals("ok", json.getString("status"));
+    }
+
+    /**
+     * Creates a route model (workflow type).
+     *
+     * @param name The name of the new route model.
+     * @param steps The JSON-formatted steps of the route model.
+     * @return The ID of the new route model.
+     */
+    private String createRouteModel(String name, String steps) {
+        JsonObject json = target().path("/routemodel").request()
+                .cookie(TokenBasedSecurityFilter.COOKIE_NAME, token)
+                .put(Entity.form(new Form()
+                        .param("name", name)
+                        .param("steps", steps)
+                ), JsonObject.class);
+        String routeModelId = json.getString("id");
+        Assert.assertNotNull(routeModelId);
+        return routeModelId;
+    }
+
+    /**
+     * Deletes a route model (workflow type).
+     *
+     * @param routeModelId The route model ID
+     */
+    private void deleteRouteModel(String routeModelId) {
+        JsonObject json = target().path("/routemodel/" + routeModelId)
+                .request()
+                .cookie(TokenBasedSecurityFilter.COOKIE_NAME, token)
+                .delete(JsonObject.class);
+        Assert.assertEquals("ok", json.getString("status"));
+    }
+
+    /**
+     * Starts a workflow on a given document.
+     *
+     * @param documentId The document ID
+     * @param routeModelId The route model ID.
+     */
+    private void startWorkflow(String documentId, String routeModelId) {
+        JsonObject json = target().path("/route/start").request()
+                .cookie(TokenBasedSecurityFilter.COOKIE_NAME, token)
+                .post(Entity.form(new Form()
+                        .param("documentId", documentId)
+                        .param("routeModelId", routeModelId)
+                ), JsonObject.class);
+        Assert.assertNotNull("ok", json.getJsonObject("route_step"));
+    }
+
+    /**
+     * Validates a workflow step.
+     *
+     * @param documentId The document ID
+     * @param transition The transition to use
+     * @param ratings The ratings JSON to send (can be null to send nothing)
+     */
+    private void validateWorkflowStep(String documentId, String transition, String ratings) {
+        Form form = new Form()
+            .param("documentId", documentId)
+            .param("transition", transition);
+
+        if (ratings != null) {
+            form = form.param("ratings", ratings);
+        }
+
+        Response response = target().path("/route/validate").request()
+            .cookie(TokenBasedSecurityFilter.COOKIE_NAME, token)
+            .post(Entity.form(form));
+        Assert.assertEquals(Response.Status.OK, Response.Status.fromStatusCode(response.getStatus()));
+        response.close();
     }
 }

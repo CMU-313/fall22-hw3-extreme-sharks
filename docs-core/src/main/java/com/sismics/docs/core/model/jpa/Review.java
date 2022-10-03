@@ -16,6 +16,21 @@ import java.util.Date;
 @Table(name = "T_REVIEW")
 public class Review {
     /**
+     * The max length of a category name
+     */
+    public static final int CATEGORY_MAX_LENGTH = 36;
+
+    /**
+     * The minimum value for a rating
+     */
+    public static final double RATING_MIN = 1;
+
+    /**
+     * The maximum value for a rating
+     */
+    public static final double RATING_MAX = 5;
+
+    /**
      * The review’s unique identifier.
      */
     @Id
@@ -31,11 +46,11 @@ public class Review {
     /**
      * The name of the category this review refers to.
      */
-    @Column(name = "REV_CATEGORY_C", nullable = false, length = 36)
+    @Column(name = "REV_CATEGORY_C", nullable = false, length = CATEGORY_MAX_LENGTH)
     private String category;
 
     /**
-     * The value of this review (1–5).
+     * The value of this review (range: {@value #RATING_MIN} to {@value #RATING_MAX}).
      */
     @Column(name = "REV_VALUE_DBL", nullable = false)
     private double value;

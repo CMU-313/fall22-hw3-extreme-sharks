@@ -7,6 +7,7 @@ import com.sismics.docs.core.dao.criteria.RouteStepCriteria;
 import com.sismics.docs.core.dao.dto.DocumentDto;
 import com.sismics.docs.core.dao.dto.RouteDto;
 import com.sismics.docs.core.dao.dto.RouteStepDto;
+import com.sismics.docs.core.model.jpa.Review;
 import com.sismics.docs.core.model.jpa.Route;
 import com.sismics.docs.core.model.jpa.RouteModel;
 import com.sismics.docs.core.model.jpa.RouteStep;
@@ -22,11 +23,12 @@ import javax.json.*;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Response;
 import java.io.StringReader;
+import java.util.LinkedList;
 import java.util.List;
 
 /**
  * Route REST resources.
- * 
+ *
  * @author bgamard
  */
 @Path("/route")
@@ -151,7 +153,8 @@ public class RouteResource extends BaseResource {
     @Path("validate")
     public Response validate(@FormParam("documentId") String documentId,
                              @FormParam("transition") String transitionStr,
-                             @FormParam("comment") String comment) {
+                             @FormParam("comment") String comment,
+                             @FormParam("ratings") String ratings) {
         if (!authenticate()) {
             throw new ForbiddenClientException();
         }
@@ -182,9 +185,40 @@ public class RouteResource extends BaseResource {
         RouteStepTransition routeStepTransition = RouteStepTransition.valueOf(transitionStr);
         if (routeStepDto.getType() == RouteStepType.VALIDATE && routeStepTransition != RouteStepTransition.VALIDATED
                 || routeStepDto.getType() == RouteStepType.APPROVE
-                && routeStepTransition != RouteStepTransition.APPROVED && routeStepTransition != RouteStepTransition.REJECTED) {
+                && routeStepTransition != RouteStepTransition.APPROVED && routeStepTransition != RouteStepTransition.REJECTED
+                || routeStepDto.getType() == RouteStepType.RESUME_REVIEW && routeStepTransition != RouteStepTransition.REVIEWED
+        ) {
             throw new ClientException("ValidationError", "Invalid transition for this route step type");
         }
+
+        // Create the new reviews
+        final List<Review> reviews = new LinkedList<>();
+        if (routeStepDto.getType() == RouteStepType.RESUME_REVIEW && ratings != null) {
+            try (JsonReader reader = Json.createReader(new StringReader(ratings))) {
+                JsonArray ratingsJson = reader.readArray();
+                for (int i = 0; i < ratingsJson.size(); i++) {
+                    // Validate the review
+                    JsonObject rating = ratingsJson.getJsonObject(i);
+                    String category = rating.getString("category");
+                    double value = rating.getJsonNumber("value").doubleValue();
+                    ValidationUtil.validateLength(category, "rating.category", 1, Review.CATEGORY_MAX_LENGTH, false);
+                    if (!(Review.RATING_MIN <= value && value <= Review.RATING_MAX)) {
+                        throw new ClientException("ValidationError", "Rating value not in valid range");
+                    }
+
+                    // Create the review
+                    Review review = new Review();
+                    review.setRouteStepId(routeStepDto.getId());
+                    review.setCategory(category);
+                    review.setValue(value);
+                    reviews.add(review);
+                }
+            } catch (JsonException | ClassCastException e) {
+                throw new ClientException("ValidationError", "The ratings field doesn't contain valid JSON");
+            }
+        }
+        var reviewDao = new ReviewDao();
+        for (Review review : reviews) reviewDao.create(review);
 
         // Execute actions
         if (routeStepDto.getTransitions() != null) {

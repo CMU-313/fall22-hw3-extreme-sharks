@@ -638,6 +638,107 @@ public class TestRouteResource extends BaseJerseyTest {
         Assert.assertEquals("ok", json.getString("status"));
     }
 
+
+    /**
+     * Tests the validation of invalid route data
+     */
+    @Test
+    public void testValidateRouteWithInvalidResumeReview() {
+        // Setup: Get the access token
+        token = clientUtil.login("admin", "admin", false);
+
+        // Setup: create a workflow
+        final String routeModelId = createRouteModel(
+                "Single review workflow",
+                "[{\"type\":\"RESUME_REVIEW\",\"transitions\":[{\"name\":\"REVIEWED\",\"actions\":[]}],\"target\":{\"name\":\"administrators\",\"type\":\"GROUP\"},\"name\":\"Please review the resume\"}]"
+        );
+
+        // Setup: create a document
+        JsonObject json = target().path("/document").request()
+                .cookie(TokenBasedSecurityFilter.COOKIE_NAME, token)
+                .put(Entity.form(new Form()
+                        .param("title", "Jane Doe")
+                        .param("description", "")
+                        .param("language", "eng")
+                        .param("create_date", Long.toString(new Date().getTime()))
+                ), JsonObject.class);
+        String documentId = json.getString("id");
+        Assert.assertNotNull(documentId);
+
+        // Setup: start the workflow
+        startWorkflow(documentId, routeModelId);
+
+        // Test: invalid transition name
+        invalidWorkflowValidation(
+                documentId,
+                "APPROVED",
+                "[{\"category\": \"GRE\", \"value\": -1}]"
+        );
+
+        // Test: invalid JSON data
+        invalidWorkflowValidation(
+                documentId,
+                "REVIEWED",
+                "[{category: \"GRE\", value: 4}]"
+        );
+
+        // Test: invalid type
+        invalidWorkflowValidation(
+                documentId,
+                "REVIEWED",
+                "[{category: null, value: 4}]"
+        );
+        invalidWorkflowValidation(
+                documentId,
+                "REVIEWED",
+                "[{category: \"GRE\", value: null}]"
+        );
+        invalidWorkflowValidation(
+                documentId,
+                "REVIEWED",
+                "[{category: 42, value: 4}]"
+        );
+        invalidWorkflowValidation(
+                documentId,
+                "REVIEWED",
+                "[{category: \"GRE\", value: \"4\"}]"
+        );
+
+        // Test: missing properties
+        invalidWorkflowValidation(
+                documentId,
+                "REVIEWED",
+                "[{\"value\": 4}]"
+        );
+        invalidWorkflowValidation(
+                documentId,
+                "REVIEWED",
+                "[{\"category\": \"GRE\"}]"
+        );
+
+        // Test: invalid range
+        invalidWorkflowValidation(
+                documentId,
+                "REVIEWED",
+                "[{\"category\": \"GRE\", \"value\": -1}]"
+        );
+        invalidWorkflowValidation(
+                documentId,
+                "REVIEWED",
+                "[{\"category\": \"GRE\", \"value\": Infinity}]"
+        );
+
+        // Tear down: delete the workflows
+        deleteRouteModel(routeModelId);
+
+        // Tear down: delete the document
+        json = target().path("/document/" + documentId).request()
+                .cookie(TokenBasedSecurityFilter.COOKIE_NAME, token)
+                .delete(JsonObject.class);
+        Assert.assertEquals("ok", json.getString("status"));
+    }
+
+
     /**
      * Creates a route model (workflow type).
      *
@@ -707,6 +808,26 @@ public class TestRouteResource extends BaseJerseyTest {
                 .cookie(TokenBasedSecurityFilter.COOKIE_NAME, token)
                 .post(Entity.form(form));
         Assert.assertEquals(Response.Status.OK, Response.Status.fromStatusCode(response.getStatus()));
+        response.close();
+    }
+
+    /**
+     * Asserts that the given workflow validation parameters cause an error.
+     *
+     * @param documentId The document ID
+     * @param transition The transition to use
+     * @param ratings    The ratings JSON to send
+     */
+    private void invalidWorkflowValidation(String documentId, String transition, String ratings) {
+        Form form = new Form()
+                .param("documentId", documentId)
+                .param("transition", transition)
+                .param("ratings", ratings);
+
+        Response response = target().path("/route/validate").request()
+                .cookie(TokenBasedSecurityFilter.COOKIE_NAME, token)
+                .post(Entity.form(form));
+        Assert.assertEquals(Response.Status.BAD_REQUEST, Response.Status.fromStatusCode(response.getStatus()));
         response.close();
     }
 

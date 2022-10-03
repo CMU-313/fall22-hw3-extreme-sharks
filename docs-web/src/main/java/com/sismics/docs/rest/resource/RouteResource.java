@@ -213,7 +213,7 @@ public class RouteResource extends BaseResource {
                     review.setValue(value);
                     reviews.add(review);
                 }
-            } catch (JsonException | ClassCastException e) {
+            } catch (JsonException | ClassCastException | NullPointerException e) {
                 throw new ClientException("ValidationError", "The ratings field doesn't contain valid JSON");
             }
         }

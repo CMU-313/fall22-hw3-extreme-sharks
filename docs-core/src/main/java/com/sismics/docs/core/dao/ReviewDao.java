@@ -2,9 +2,7 @@ package com.sismics.docs.core.dao;
 
 import com.sismics.docs.core.model.jpa.Review;
 import com.sismics.docs.core.model.jpa.Route;
-import com.sismics.docs.core.model.jpa.RouteModel;
 import com.sismics.util.context.ThreadLocalContext;
-import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang3.tuple.Pair;
 
 import javax.persistence.EntityManager;

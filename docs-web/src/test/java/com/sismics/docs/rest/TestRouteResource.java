@@ -3,12 +3,15 @@ package com.sismics.docs.rest;
 import com.sismics.docs.core.dao.ReviewDao;
 import com.sismics.docs.core.model.jpa.Review;
 import com.sismics.docs.core.model.jpa.Route;
+import com.sismics.util.context.ThreadLocalContext;
 import com.sismics.util.filter.TokenBasedSecurityFilter;
+import com.sismics.util.jpa.EMF;
 import org.junit.Assert;
 import org.junit.Test;
 
 import javax.json.JsonArray;
 import javax.json.JsonObject;
+import javax.persistence.EntityManager;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.Form;
 import javax.ws.rs.core.Response;
@@ -527,6 +530,12 @@ public class TestRouteResource extends BaseJerseyTest {
      */
     @Test
     public void testValidateRouteWithResumeReview() {
+        // Setup: Initialize the entity manager (needed so we can query the database from the test)
+        EntityManager em = EMF.get().createEntityManager();
+        ThreadLocalContext.get().setEntityManager(em);
+        em.getTransaction().begin();
+
+        // Setup: Get the access token
         token = clientUtil.login("admin", "admin", false);
 
         // Setup: create some workflows

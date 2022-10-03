@@ -3,7 +3,6 @@ package com.sismics.docs.rest;
 import com.sismics.docs.core.dao.ReviewDao;
 import com.sismics.docs.core.model.jpa.Review;
 import com.sismics.docs.core.model.jpa.Route;
-import com.sismics.docs.core.model.jpa.RouteModel;
 import com.sismics.util.filter.TokenBasedSecurityFilter;
 import org.junit.Assert;
 import org.junit.Test;
@@ -16,6 +15,9 @@ import javax.ws.rs.core.Response;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.function.BiFunction;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 /**
  * Test the route resource.
@@ -529,16 +531,16 @@ public class TestRouteResource extends BaseJerseyTest {
 
         // Setup: create some workflows
         final String oneReviewStepRouteModelId = createRouteModel(
-            "Single review workflow",
-            "[{\"type\":\"RESUME_REVIEW\",\"transitions\":[{\"name\":\"REVIEWED\",\"actions\":[]}],\"target\":{\"name\":\"administrators\",\"type\":\"GROUP\"},\"name\":\"Please review the resume\"}]"
+                "Single review workflow",
+                "[{\"type\":\"RESUME_REVIEW\",\"transitions\":[{\"name\":\"REVIEWED\",\"actions\":[]}],\"target\":{\"name\":\"administrators\",\"type\":\"GROUP\"},\"name\":\"Please review the resume\"}]"
         );
         final String twoReviewStepsRouteModelId = createRouteModel(
-            "Two reviews workflow",
-            "[{\"type\":\"RESUME_REVIEW\",\"transitions\":[{\"name\":\"REVIEWED\",\"actions\":[]}],\"target\":{\"name\":\"administrators\",\"type\":\"GROUP\"},\"name\":\"Please review the resume for the first time\"},{\"type\":\"RESUME_REVIEW\",\"transitions\":[{\"name\":\"REVIEWED\",\"actions\":[]}],\"target\":{\"name\":\"administrators\",\"type\":\"GROUP\"},\"name\":\"Please review the resume for the second time\"}]"
+                "Two reviews workflow",
+                "[{\"type\":\"RESUME_REVIEW\",\"transitions\":[{\"name\":\"REVIEWED\",\"actions\":[]}],\"target\":{\"name\":\"administrators\",\"type\":\"GROUP\"},\"name\":\"Please review the resume for the first time\"},{\"type\":\"RESUME_REVIEW\",\"transitions\":[{\"name\":\"REVIEWED\",\"actions\":[]}],\"target\":{\"name\":\"administrators\",\"type\":\"GROUP\"},\"name\":\"Please review the resume for the second time\"}]"
         );
         final String noReviewStepsRouteModelId = createRouteModel(
-            "No reviews flow",
-            "[{\"type\":\"VALIDATE\",\"transitions\":[{\"name\":\"VALIDATED\",\"actions\":[]}],\"target\":{\"name\":\"administrators\",\"type\":\"GROUP\"},\"name\":\"Please validate\"}]"
+                "No reviews workflow",
+                "[{\"type\":\"VALIDATE\",\"transitions\":[{\"name\":\"VALIDATED\",\"actions\":[]}],\"target\":{\"name\":\"administrators\",\"type\":\"GROUP\"},\"name\":\"Please validate\"}]"
         );
 
         // Setup: create a document
@@ -556,23 +558,22 @@ public class TestRouteResource extends BaseJerseyTest {
         // Test: do the simple workflow on this document
         startWorkflow(documentId, oneReviewStepRouteModelId);
         validateWorkflowStep(
-            documentId,
-            "REVIEWED",
-            "[{\"category\":\"GRE\",\"value\":4},{\"category\":\"GPA\",\"value\":3.5},{\"category\":\"Skills\",\"value\":5},{\"category\":\"Experience\",\"value\":4.5},{\"category\":\"Extracurriculars\",\"value\":4}]"
+                documentId,
+                "REVIEWED",
+                "[{\"category\":\"GRE\",\"value\":4},{\"category\":\"GPA\",\"value\":3.5},{\"category\":\"Skills\",\"value\":5},{\"category\":\"Experience\",\"value\":4.5},{\"category\":\"Extracurriculars\",\"value\":4}]"
         );
 
         // Test: do the workflow with two review steps
         startWorkflow(documentId, twoReviewStepsRouteModelId);
         validateWorkflowStep(
-            documentId,
-            "REVIEWED",
-            "[{\"category\":\"GRE\",\"value\":1},{\"category\":\"GPA\",\"value\":2},{\"category\":\"Skills\",\"value\":3},{\"category\":\"Experience\",\"value\":4},{\"category\":\"Extracurriculars\",\"value\":5}]"
+                documentId,
+                "REVIEWED",
+                "[{\"category\":\"GRE\",\"value\":1},{\"category\":\"GPA\",\"value\":2},{\"category\":\"Skills\",\"value\":3},{\"category\":\"Experience\",\"value\":4},{\"category\":\"Extracurriculars\",\"value\":5}]"
         );
-
         validateWorkflowStep(
-            documentId,
-            "REVIEWED",
-            "[{\"category\":\"GRE\",\"value\":5},{\"category\":\"GPA\",\"value\":4},{\"category\":\"Skills\",\"value\":3},{\"category\":\"Experience\",\"value\":2},{\"category\":\"Extracurriculars\",\"value\":1}]"
+                documentId,
+                "REVIEWED",
+                "[{\"category\":\"GRE\",\"value\":5},{\"category\":\"GPA\",\"value\":4},{\"category\":\"Skills\",\"value\":3},{\"category\":\"Experience\",\"value\":2},{\"category\":\"Extracurriculars\",\"value\":1}]"
         );
 
         // Test: do a non-review workflow
@@ -582,8 +583,39 @@ public class TestRouteResource extends BaseJerseyTest {
         // Test: start a review workflow without completing it
         startWorkflow(documentId, oneReviewStepRouteModelId);
 
-        // Test: verify that the reviews are in the database
-        // @TODO
+        // Test: get the reviews from the database
+        ReviewDao dao = new ReviewDao();
+        Map<Route, List<Review>> results = dao.findByDocument(documentId);
+        Assert.assertEquals(3, results.entrySet().size());
+
+        // Test: the workflow with one reviews is there
+        List<Review> firstWorkflowReviews = find(
+                results,
+                (route, reviews) -> route.getName().equals("Single review workflow") && reviews.size() == 5
+        );
+        Assert.assertNotNull(firstWorkflowReviews);
+        Review review = find(firstWorkflowReviews, r -> r.getCategory().equals("GPA"));
+        Assert.assertNotNull(review);
+        Assert.assertEquals(3.5, review.getValue(), 0);
+
+        // Test: the workflow with two reviews is there
+        List<Review> secondWorkflowReviews = find(
+                results,
+                (route, reviews) -> route.getName().equals("No reviews workflow")
+        );
+        Assert.assertNotNull(secondWorkflowReviews);
+        Assert.assertEquals(10, secondWorkflowReviews.size());
+        Assert.assertNotNull(find(secondWorkflowReviews, r -> r.getCategory().equals("Experience") && r.getValue() == 4));
+        Assert.assertNotNull(find(secondWorkflowReviews, r -> r.getCategory().equals("Experience") && r.getValue() == 2));
+
+        // Test: the non-review workflow is not there
+        Assert.assertNull(find(results, (route, reviews) -> route.getName().equals("No reviews workflow")));
+
+        // Test: The incomplete route is there
+        Assert.assertNotNull(find(
+                results,
+                (route, reviews) -> route.getName().equals("Single review workflow") && reviews.size() == 0
+        ));
 
         // Tear down: delete the workflows
         deleteRouteModel(oneReviewStepRouteModelId);
@@ -600,8 +632,9 @@ public class TestRouteResource extends BaseJerseyTest {
     /**
      * Creates a route model (workflow type).
      *
-     * @param name The name of the new route model.
+     * @param name  The name of the new route model.
      * @param steps The JSON-formatted steps of the route model.
+     *
      * @return The ID of the new route model.
      */
     private String createRouteModel(String name, String steps) {
@@ -632,7 +665,7 @@ public class TestRouteResource extends BaseJerseyTest {
     /**
      * Starts a workflow on a given document.
      *
-     * @param documentId The document ID
+     * @param documentId   The document ID
      * @param routeModelId The route model ID.
      */
     private void startWorkflow(String documentId, String routeModelId) {
@@ -650,21 +683,62 @@ public class TestRouteResource extends BaseJerseyTest {
      *
      * @param documentId The document ID
      * @param transition The transition to use
-     * @param ratings The ratings JSON to send (can be null to send nothing)
+     * @param ratings    The ratings JSON to send (can be null to send nothing)
      */
     private void validateWorkflowStep(String documentId, String transition, String ratings) {
         Form form = new Form()
-            .param("documentId", documentId)
-            .param("transition", transition);
+                .param("documentId", documentId)
+                .param("transition", transition);
 
         if (ratings != null) {
             form = form.param("ratings", ratings);
         }
 
         Response response = target().path("/route/validate").request()
-            .cookie(TokenBasedSecurityFilter.COOKIE_NAME, token)
-            .post(Entity.form(form));
+                .cookie(TokenBasedSecurityFilter.COOKIE_NAME, token)
+                .post(Entity.form(form));
         Assert.assertEquals(Response.Status.OK, Response.Status.fromStatusCode(response.getStatus()));
         response.close();
+    }
+
+    /**
+     * Get the value of a map where the entry satisfies some predicate
+     *
+     * @param map       The map
+     * @param predicate The predicate
+     * @param <K>       The key type
+     * @param <V>       The value type
+     *
+     * @return The matching value or null if there wasn’t exactly one entry matching the predicate
+     */
+    private <K, V> V find(Map<K, V> map, BiFunction<K, V, Boolean> predicate) {
+        List<Map.Entry<K, V>> matches = map.entrySet().stream()
+                .filter(entry -> predicate.apply(entry.getKey(), entry.getValue()))
+                .collect(Collectors.toList());
+
+        if (matches.size() != 1) {
+            return null;
+        }
+
+        return matches.get(0).getValue();
+    }
+
+    /**
+     * Get the value of a list that matches some predicate
+     *
+     * @param list      The list
+     * @param predicate The predicate
+     * @param <T>       The list elements type
+     *
+     * @return The matching value or null if there wasn’t exactly one element matching the predicate
+     */
+    private <T> T find(List<T> list, Predicate<T> predicate) {
+        List<T> matches = list.stream().filter(predicate).collect(Collectors.toList());
+
+        if (matches.size() != 1) {
+            return null;
+        }
+
+        return matches.get(0);
     }
 }

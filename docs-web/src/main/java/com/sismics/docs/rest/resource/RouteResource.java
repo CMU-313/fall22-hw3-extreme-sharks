@@ -138,6 +138,10 @@ public class RouteResource extends BaseResource {
      * @apiParam {String} documentId Document ID
      * @apiParam {String} transition Route step transition
      * @apiParam {String} comment Route step comment
+     * @apiParam {Object[]} ratings The ratings created by the user in this workflow step (only for the REVIEWED transition).
+     *                              This field is encoded as JSON.
+     * @apiParam {String} ratings.category The category that a specific rating belongs to
+     * @apiParam {Number} ratings.value The value of a specific rating (Range: 1-5)
      * @apiSuccess {String} status Status OK
      * @apiError (client) ForbiddenError Access denied
      * @apiError (client) NotFound Document or route not found

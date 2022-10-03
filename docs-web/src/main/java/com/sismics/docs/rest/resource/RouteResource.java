@@ -141,6 +141,7 @@ public class RouteResource extends BaseResource {
      * @apiSuccess {String} status Status OK
      * @apiError (client) ForbiddenError Access denied
      * @apiError (client) NotFound Document or route not found
+     * @apiError (client) ValidationError The query parameters don’t match the expected format
      * @apiPermission user
      * @apiVersion 1.5.0
      *

@@ -610,7 +610,7 @@ public class TestRouteResource extends BaseJerseyTest {
         // Test: the workflow with two reviews is there
         List<Review> secondWorkflowReviews = find(
                 results,
-                (route, reviews) -> route.getName().equals("No reviews workflow")
+                (route, reviews) -> route.getName().equals("Two reviews workflow")
         );
         Assert.assertNotNull(secondWorkflowReviews);
         Assert.assertEquals(10, secondWorkflowReviews.size());

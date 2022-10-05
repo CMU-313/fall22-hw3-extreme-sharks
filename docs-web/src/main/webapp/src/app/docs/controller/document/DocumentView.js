@@ -154,10 +154,20 @@ angular.module('docs').controller('DocumentView', function ($scope, $rootScope, 
   });
 
   $scope.validateWorkflow = function (transition) {
+    var ratings = transition === 'REVIEWED'
+      ? JSON.stringify($scope.ratingCategories.map(function(category) {
+        return {
+          category: category.name,
+          value: parseInt(category.value)
+        }
+      }))
+      : null;
+
     Restangular.one('route').post('validate', {
       documentId: $stateParams.id,
       transition: transition,
       comment: $scope.workflowComment,
+      ratings: ratings,
     }).then(function (data) {
       $scope.workflowComment = '';
       var title = $translate.instant('document.view.workflow_validated_title');

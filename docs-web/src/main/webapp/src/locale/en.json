@@ -145,6 +145,9 @@
         "acl_target": "For",
         "acl_permission": "Permission"
       },
+      "reviews": {
+        "reviews": "Reviews"
+      },
       "activity": {
         "activity": "Activity",
         "message": "Every actions on this document are logged here."

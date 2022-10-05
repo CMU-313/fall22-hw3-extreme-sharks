@@ -329,6 +329,15 @@ angular.module('docs',
         }
       }
     })
+    .state('document.view.reviews', {
+      url: '/reviews',
+      views: {
+        'tab': {
+          templateUrl: 'partial/docs/document.view.reviews.html',
+          controller: 'DocumentViewReviews'
+        }
+      }
+    })
     .state('document.view.content.file', {
       url: '/file/:fileId',
       views: {

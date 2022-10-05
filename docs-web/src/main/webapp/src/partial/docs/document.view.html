@@ -91,6 +91,11 @@
             <span class="fas fa-tasks"></span> {{ 'document.view.activity' | translate }}
           </a>
         </li>
+        <li ng-class="{ active: $state.current.name == 'document.view.reviews' }">
+          <a href="#/document/view/{{ document.id }}/reviews">
+            <span class="far fa-file"></span> {{ 'document.view.reviews' | translate }}
+          </a>
+        </li>
       </ul>
       <div ui-view="tab"></div>
     </div>
@@ -101,8 +106,7 @@
           {{ 'document.view.workflow_current' | translate }}
         </p>
         <style>
-          /* Rating Code adapted and sourced from https://codepen.io/hesguru/pen/BaybqXv */
-
+          /* Rating Code inspired by https://codepen.io/hesguru/pen/BaybqXv */
           .ratings-stars {
             height: 46px;
             padding: 0 10px;
@@ -143,6 +147,7 @@
           </p>
 
           <p ng-show="document.route_step.transitionable">
+
             <div ng-show="document.route_step.type == 'RESUME_REVIEW'">
               <div class="ratings-stars" ng-repeat="category in ratingCategories">
                 <strong class="rating">{{ category.name }}</strong><br>

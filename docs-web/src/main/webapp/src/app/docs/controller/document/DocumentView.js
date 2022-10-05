@@ -145,11 +145,19 @@ angular.module('docs').controller('DocumentView', function ($scope, $rootScope, 
   /**
    * Validate the workflow.
    */
+  $scope.ratingCategories = ['GPA', 'Skills', 'Extracurriculars', 'Experience'].map(function(name) {
+    return {
+      id: name.toLowerCase().replace(' ', ''),
+      name,
+      value: '1',
+    };
+  });
+
   $scope.validateWorkflow = function (transition) {
     Restangular.one('route').post('validate', {
       documentId: $stateParams.id,
       transition: transition,
-      comment: $scope.workflowComment
+      comment: $scope.workflowComment,
     }).then(function (data) {
       $scope.workflowComment = '';
       var title = $translate.instant('document.view.workflow_validated_title');

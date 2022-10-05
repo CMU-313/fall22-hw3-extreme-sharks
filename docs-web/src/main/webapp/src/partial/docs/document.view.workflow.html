@@ -58,6 +58,7 @@
     <td>
       <span class="fas fa-exchange-alt" ng-if="step.type == 'APPROVE'"></span>
       <span class="fas fa-check-circle" ng-if="step.type == 'VALIDATE'"></span>
+      <span class="far fa-file" ng-if="step.type == 'RESUME_REVIEW'"></span>
       {{ 'workflow_type.' + step.type | translate }}
     </td>
     <td>{{ step.name }}</td>

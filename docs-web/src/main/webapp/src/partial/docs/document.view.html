@@ -103,18 +103,16 @@
         <style>
           /* Rating Code adapted and sourced from https://codepen.io/hesguru/pen/BaybqXv */
 
-          .experience {
-            margin: 20px;
-            padding: 10px;
-            float: left;
+          .ratings-stars {
             height: 46px;
             padding: 0 10px;
+            text-align: center;
           }
-          .experience:not(:checked) > input {
+          .ratings-stars:not(:checked) > input {
             position: absolute;
             top: -9999px;
           }
-          .experience:not(:checked) > label {
+          .ratings-stars:not(:checked) > label {
             float: right;
             width: 1em;
             overflow: hidden;
@@ -123,74 +121,14 @@
             font-size: 20px;
             color: #ddd;
           }
-          .experience:not(:checked) > label:before {
+          .ratings-stars:not(:checked) > label:before {
             content: "★ ";
           }
-          .experience > input:checked ~ label {
+          .ratings-stars > input:checked ~ label {
             color: #5bc0de;
           }
-          .experience:not(:checked) > label:hover,
-          .experience:not(:checked) > label:hover ~ label {
-            color: #46b8da;
-          }
-
-          .gpa {
-            margin: 20px;
-            float: left;
-            height: 46px;
-            padding: 0 10px;
-          }
-          .gpa:not(:checked) > input {
-            position: absolute;
-            top: -9999px;
-          }
-          .gpa:not(:checked) > label {
-            float: right;
-            width: 1em;
-            overflow: hidden;
-            white-space: nowrap;
-            cursor: pointer;
-            font-size: 20px;
-            color: #ddd;
-          }
-          .gpa:not(:checked) > label:before {
-            content: "★ ";
-          }
-          .gpa > input:checked ~ label {
-            color: #5bc0de;
-          }
-          .gpa:not(:checked) > label:hover,
-          .gpa:not(:checked) > label:hover ~ label {
-            color: #46b8da;
-          }
-
-          .skills {
-            margin: 20px;
-            float: left;
-            height: 46px;
-            padding: 0 10px;
-          }
-          .skills:not(:checked) > input {
-            position: absolute;
-            top: -9999px;
-          }
-          .skills:not(:checked) > label {
-            float: right;
-            width: 1em;
-            overflow: hidden;
-            white-space: nowrap;
-            cursor: pointer;
-            font-size: 20px;
-            color: #ddd;
-          }
-          .skills:not(:checked) > label:before {
-            content: "★ ";
-          }
-          .skills > input:checked ~ label {
-            color: #5bc0de;
-          }
-          .skills:not(:checked) > label:hover,
-          .skills:not(:checked) > label:hover ~ label {
+          .ratings-stars:not(:checked) > label:hover,
+          .ratings-stars:not(:checked) > label:hover ~ label {
             color: #46b8da;
           }
         </style>
@@ -203,46 +141,23 @@
             {{ 'workflow_type.' + document.route_step.type | translate }}
             <span class="label label-default"><acl data="document.route_step.target"></acl></span>
           </p>
+
           <p ng-show="document.route_step.transitionable">
-            <div class="gpa" ng-show="document.route_step.type == 'VALIDATE'">
-              <strong class="rating">GPA</strong><br>
-              <input type="radio" id="gpastar5" name="gpa" value="5" />
-              <label for="gpastar5" title="text">5 stars</label>
-              <input type="radio" id="gpastar4" name="gpa" value="4" />
-              <label for="gpastar4" title="text">4 stars</label>
-              <input type="radio" id="gpastar3" name="gpa" value="3" />
-              <label for="gpastar3" title="text">3 stars</label>
-              <input type="radio" id="gpastar2" name="gpa" value="2" />
-              <label for="gpastar2" title="text">2 stars</label>
-              <input type="radio" id="gpastar1" name="gpa" value="1" />
-              <label for="gpastar1" title="text">1 star</label>
-            </div>  
-            <div class="skills" ng-show="document.route_step.type == 'VALIDATE'">
-              <strong class="rating">Skills</strong><br>
-              <input type="radio" id="skillsstar5" name="skills" value="5" />
-              <label for="skillsstar5" title="text">5 stars</label>
-              <input type="radio" id="skillsstar4" name="skills" value="4" />
-              <label for="skillsstar4" title="text">4 stars</label>
-              <input type="radio" id="skillsstar3" name="skills" value="3" />
-              <label for="skillsstar3" title="text">3 stars</label>
-              <input type="radio" id="skillsstar2" name="skills" value="2" />
-              <label for="skillsstar2" title="text">2 stars</label>
-              <input type="radio" id="skillsstar1" name="skills" value="1" />
-              <label for="skillsstar1" title="text">1 star</label>
-            </div> 
-            <div class="experience" ng-show="document.route_step.type == 'VALIDATE'">
-              <strong class="rating">Experience</strong><br>
-              <input type="radio" id="experiencestar5" name="experience" value="5" />
-              <label for="experiencestar5" title="text">5 stars</label>
-              <input type="radio" id="experiencestar4" name="experience" value="4" />
-              <label for="experiencestar4" title="text">4 stars</label>
-              <input type="radio" id="experiencestar3" name="experience" value="3" />
-              <label for="experiencestar3" title="text">3 stars</label>
-              <input type="radio" id="experiencestar2" name="experience" value="2" />
-              <label for="experiencestar2" title="text">2 stars</label>
-              <input type="radio" id="experiencestar1" name="experience" value="1" />
-              <label for="experiencestar1" title="text">1 star</label>
-            </div> 
+            <div ng-show="document.route_step.type == 'RESUME_REVIEW'">
+              <div class="ratings-stars" ng-repeat="category in ratingCategories">
+                <strong class="rating">{{ category.name }}</strong><br>
+                <input type="radio" id="-{{ category.id }}star5" name="{{ category.id }}" value="5" ng-model="category.value">
+                <label for="star5-{{ category.id }}" title="text">5 stars</label>
+                <input type="radio" id="star4-{{ category.id }}" name="{{ category.id }}" value="4" ng-model="category.value">
+                <label for="star4-{{ category.id }}" title="text">4 stars</label>
+                <input type="radio" id="star3-{{ category.id }}" name="{{ category.id }}" value="3" ng-model="category.value">
+                <label for="star3-{{ category.id }}" title="text">3 stars</label>
+                <input type="radio" id="star2-{{ category.id }}" name="{{ category.id }}" value="2" ng-model="category.value">
+                <label for="star2-{{ category.id }}" title="text">2 stars</label>
+                <input type="radio" id="star1-{{ category.id }}" name="{{ category.id }}" value="1" ng-model="category.value">
+                <label for="star1-{{ category.id }}" title="text">1 star</label>
+              </div>
+            </div>
           
             <textarea ng-model="workflowComment" maxlength="500" class="form-control mb-10"
                       ng-attr-placeholder="{{ 'document.view.workflow_comment' | translate }}"></textarea>
@@ -261,10 +176,10 @@
                   ng-click="validateWorkflow('REJECTED')">
               {{ 'workflow_transition.REJECTED' | translate }}
             </span>
-            <span class="btn btn-danger"
+            <span class="btn btn-primary"
                   ng-show="document.route_step.type == 'RESUME_REVIEW'"
-                  ng-click="validateWorkflow('SAVE')">
-              {{ 'workflow_transition.RESUME_REVIEW' | translate }}
+                  ng-click="validateWorkflow('REVIEWED')">
+              {{ 'workflow_transition.REVIEWED' | translate }}
             </span>
           </p>
         </div>
@@ -300,10 +215,6 @@
           </span>
           </p>
         </div>
-      </div>
-
-      <div>
-        <p>GPA</p>
       </div>
 
       <form ng-submit="addComment()">

@@ -592,6 +592,8 @@ public class TestRouteResource extends BaseJerseyTest {
         // Test: start a review workflow without completing it
         startWorkflow(documentId, oneReviewStepRouteModelId);
 
+        // Get the route and match it
+
         // Test: get the reviews from the database
         ReviewDao dao = new ReviewDao();
         Map<Route, List<Review>> results = dao.findByDocument(documentId);
@@ -602,6 +604,7 @@ public class TestRouteResource extends BaseJerseyTest {
                 results,
                 (route, reviews) -> route.getName().equals("Single review workflow") && reviews.size() == 5
         );
+
         Assert.assertNotNull(firstWorkflowReviews);
         Review review = find(firstWorkflowReviews, r -> r.getCategory().equals("GPA"));
         Assert.assertNotNull(review);
@@ -637,7 +640,6 @@ public class TestRouteResource extends BaseJerseyTest {
                 .delete(JsonObject.class);
         Assert.assertEquals("ok", json.getString("status"));
     }
-
 
     /**
      * Tests the validation of invalid route data
@@ -738,6 +740,187 @@ public class TestRouteResource extends BaseJerseyTest {
         Assert.assertEquals("ok", json.getString("status"));
     }
 
+    /**
+     * Tests that the workflow history get routes for reviews
+     */
+    @Test
+    public void testGetRouteWithReview(){
+        // Setup: Initialize the entity manager (needed so we can query the database from the test)
+        EntityManager em = EMF.get().createEntityManager();
+        ThreadLocalContext.get().setEntityManager(em);
+        em.getTransaction().begin();
+
+        // Setup: Get the access token
+        token = clientUtil.login("admin", "admin", false);
+
+        // Setup: create some workflows
+        final String reviewStepRouteModelId = createRouteModel(
+                "Single review workflow",
+                "[{\"type\":\"RESUME_REVIEW\",\"transitions\":[{\"name\":\"REVIEWED\",\"actions\":[]}],\"target\":{\"name\":\"administrators\",\"type\":\"GROUP\"},\"name\":\"Please review the resume\"}]"
+        );
+        final String review2StepRouteModelId = createRouteModel(
+                "Single review workflow 2",
+                "[{\"type\":\"RESUME_REVIEW\",\"transitions\":[{\"name\":\"REVIEWED\",\"actions\":[]}],\"target\":{\"name\":\"administrators\",\"type\":\"GROUP\"},\"name\":\"Please review the resume 2\"}]"
+        );
+
+        // Setup: create a document
+        JsonObject json = target().path("/document").request()
+                .cookie(TokenBasedSecurityFilter.COOKIE_NAME, token)
+                .put(Entity.form(new Form()
+                        .param("title", "John Doe")
+                        .param("description", "")
+                        .param("language", "eng")
+                        .param("create_date", Long.toString(new Date().getTime()))
+                ), JsonObject.class);
+        String document1Id = json.getString("id");
+        Assert.assertNotNull(document1Id);
+
+        //Start one review workflow
+        startWorkflow(document1Id, reviewStepRouteModelId);
+
+        // List all documents with admin
+        json = target().path("/document/list")
+                        .queryParam("sort_column", 3)
+                        .queryParam("asc", true)
+                        .request()
+                        .cookie(TokenBasedSecurityFilter.COOKIE_NAME, token)
+                        .get(JsonObject.class);
+
+        JsonArray documents = json.getJsonArray("documents");
+        // Check that workflow with review is reflected
+        Assert.assertEquals(1, documents.size());
+
+        //Get the document as route1
+        json = target().path("/document/" + document1Id)
+                        .request()
+                        .cookie(TokenBasedSecurityFilter.COOKIE_NAME, token)
+                        .get(JsonObject.class);
+        Assert.assertTrue(json.containsKey("route_step"));
+        Assert.assertEquals("Please review the resume", json.getJsonObject("route_step").getString("name"));
+        Assert.assertEquals("RESUME_REVIEW", json.getJsonObject("route_step").getString("type"));
+
+         // Get the route on the document
+        json = target().path("/route")
+                .queryParam("documentId", document1Id)
+                .request()
+                .cookie(TokenBasedSecurityFilter.COOKIE_NAME, token)
+                .get(JsonObject.class);
+        JsonArray routes = json.getJsonArray("routes");
+        Assert.assertEquals(1, routes.size());
+        JsonObject route = routes.getJsonObject(0);
+        Assert.assertEquals("Single review workflow", route.getString("name"));
+        Assert.assertNotNull(route.getJsonNumber("create_date"));
+        JsonArray steps = route.getJsonArray("steps");
+        Assert.assertEquals(1, steps.size());
+        JsonObject step = steps.getJsonObject(0);
+        Assert.assertEquals("Please review the resume", step.getString("name"));
+        Assert.assertEquals("RESUME_REVIEW", step.getString("type"));
+        Assert.assertTrue(step.isNull("comment"));
+        Assert.assertTrue(step.isNull("end_date"));
+        Assert.assertTrue(step.isNull("validator_username"));
+        Assert.assertTrue(step.isNull("transition"));
+        JsonObject target = step.getJsonObject("target");
+        Assert.assertEquals("administrators", target.getString("id"));
+        Assert.assertEquals("administrators", target.getString("name"));
+        Assert.assertEquals("GROUP", target.getString("type"));
+
+        //Validate the step
+        validateWorkflowStep(
+                document1Id,
+                "REVIEWED",
+                "[{\"category\":\"GRE\",\"value\":4},{\"category\":\"GPA\",\"value\":3.5},{\"category\":\"Skills\",\"value\":5},{\"category\":\"Experience\",\"value\":4.5},{\"category\":\"Extracurriculars\",\"value\":4}]"
+        );
+        // Get the route on the document after validation
+        json = target().path("/route")
+                .queryParam("documentId", document1Id)
+                .request()
+                .cookie(TokenBasedSecurityFilter.COOKIE_NAME, token)
+                .get(JsonObject.class);
+        routes = json.getJsonArray("routes");
+        Assert.assertEquals(1, routes.size());
+        route = routes.getJsonObject(0);
+        Assert.assertEquals("Single review workflow", route.getString("name"));
+        Assert.assertNotNull(route.getJsonNumber("create_date"));
+        steps = route.getJsonArray("steps");
+        Assert.assertEquals(1, steps.size());
+        step = steps.getJsonObject(0);
+        Assert.assertEquals("Please review the resume", step.getString("name"));
+        Assert.assertEquals("RESUME_REVIEW", step.getString("type"));
+        Assert.assertTrue(step.isNull("comment"));
+        Assert.assertNotNull(step.getJsonNumber("end_date"));
+        Assert.assertEquals("admin", step.getString("validator_username"));
+        Assert.assertEquals("REVIEWED", step.getString("transition"));
+        target = step.getJsonObject("target");
+        Assert.assertEquals("administrators", target.getString("id"));
+        Assert.assertEquals("administrators", target.getString("name"));
+        Assert.assertEquals("GROUP", target.getString("type"));
+
+        // Setup: create another document under admin
+        json = target().path("/document").request()
+                .cookie(TokenBasedSecurityFilter.COOKIE_NAME, token)
+                .put(Entity.form(new Form()
+                        .param("title", "Jane Doe")
+                        .param("description", "")
+                        .param("language", "eng")
+                        .param("create_date", Long.toString(new Date().getTime()))
+                ), JsonObject.class);
+        String document2Id = json.getString("id");
+        Assert.assertNotNull(document2Id);
+
+        // Create a review route under document 2
+        startWorkflow(document2Id, review2StepRouteModelId);
+
+        // List all documents with admin
+        json = target().path("/document/list")
+                        .queryParam("sort_column", 3)
+                        .queryParam("asc", true)
+                        .request()
+                        .cookie(TokenBasedSecurityFilter.COOKIE_NAME, token)
+                        .get(JsonObject.class);
+        documents = json.getJsonArray("documents");
+        Assert.assertEquals(2, documents.size());
+
+        //Get the route on document 2
+        json = target().path("/route")
+                .queryParam("documentId", document2Id)
+                .request()
+                .cookie(TokenBasedSecurityFilter.COOKIE_NAME, token)
+                .get(JsonObject.class);
+        routes = json.getJsonArray("routes");
+        Assert.assertEquals(1, routes.size());
+        route = routes.getJsonObject(0);
+        Assert.assertEquals("Single review workflow 2", route.getString("name"));
+        Assert.assertNotNull(route.getJsonNumber("create_date"));
+        steps = route.getJsonArray("steps");
+        Assert.assertEquals(1, steps.size());
+        step = steps.getJsonObject(0);
+        Assert.assertEquals("Please review the resume 2", step.getString("name"));
+        Assert.assertEquals("RESUME_REVIEW", step.getString("type"));
+        Assert.assertTrue(step.isNull("comment"));
+        Assert.assertTrue(step.isNull("end_date"));
+        Assert.assertTrue(step.isNull("validator_username"));
+        Assert.assertTrue(step.isNull("transition"));
+        target = step.getJsonObject("target");
+        Assert.assertEquals("administrators", target.getString("id"));
+        Assert.assertEquals("administrators", target.getString("name"));
+        Assert.assertEquals("GROUP", target.getString("type"));
+
+
+        // Tear down: delete the workflows
+        deleteRouteModel(reviewStepRouteModelId);
+        deleteRouteModel(review2StepRouteModelId);
+
+        // Tear down: delete the documents
+        json = target().path("/document/" + document1Id).request()
+                .cookie(TokenBasedSecurityFilter.COOKIE_NAME, token)
+                .delete(JsonObject.class);
+        Assert.assertEquals("ok", json.getString("status"));
+        
+        json = target().path("/document/" + document2Id).request()
+                .cookie(TokenBasedSecurityFilter.COOKIE_NAME, token)
+                .delete(JsonObject.class);
+        Assert.assertEquals("ok", json.getString("status"));
+    }
 
     /**
      * Creates a route model (workflow type).

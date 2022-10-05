@@ -121,7 +121,6 @@ public class TestRouteModelResource extends BaseJerseyTest {
         Assert.assertEquals(routeModelId, json.getString("id"));
         Assert.assertEquals("Workflow validation 2", json.getString("name"));
         Assert.assertEquals("[{\"type\":\"APPROVE\",\"transitions\":[{\"name\":\"APPROVED\",\"actions\":[{\"type\":\"ADD_TAG\",\"tag\":\"" + tagRouteId + "\"}]},{\"name\":\"REJECTED\",\"actions\":[]}],\"target\":{\"name\":\"administrators\",\"type\":\"GROUP\"},\"name\":\"Check the document's metadata\"}]", json.getString("steps"));
-        
         // Delete the route model
         target().path("/routemodel/" + routeModelId)
                 .request()
@@ -170,7 +169,7 @@ public class TestRouteModelResource extends BaseJerseyTest {
                 .delete(JsonObject.class);
     }
 
-    /**
+    /*
      * Tests that we can update an existing workflow with the resume review type
      */
     @Test
@@ -207,52 +206,4 @@ public class TestRouteModelResource extends BaseJerseyTest {
                 .cookie(TokenBasedSecurityFilter.COOKIE_NAME, adminToken)
                 .delete(JsonObject.class);
     }
-
-     /**
-     * Tests that the workflow history can reflect the resume review type
-     */
-    @Test
-    public void testHistoryWorkflowResumeReview() {
-        // Login admin
-        String adminToken = clientUtil.login("admin", "admin", false);
-
-        // Create a review route model without actions
-        String stepsData = "[{\"type\":\"RESUME_REVIEW\",\"transitions\":[{\"name\":\"REVIEWED\",\"actions\":[]}],\"target\":{\"name\":\"administrators\",\"type\":\"GROUP\"},\"name\":\"Please review the resume\"}]";
-        JsonObject json = target().path("/routemodel").request()
-                .cookie(TokenBasedSecurityFilter.COOKIE_NAME, adminToken)
-                .put(Entity.form(new Form()
-                        .param("name", "My sample resume review workflow")
-                        .param("steps", stepsData)), JsonObject.class);
-        String routeModelId = json.getString("id");
-
-        // Get the route models
-        json = target().path("/routemodel/" + routeModelId)
-                .request()
-                .cookie(TokenBasedSecurityFilter.COOKIE_NAME, adminToken)
-                .get(JsonObject.class);
-        JsonArray routeModels = json.getJsonArray("routemodels");
-        Assert.assertEquals(1, routeModels.size());
-        Assert.assertEquals(routeModelId, routeModels.getJsonObject(0).getString("id"));
-        Assert.assertEquals("My sample resume review workflow", routeModels.getJsonObject(0).getString("name"));
-        Assert.assertEquals(stepsData, routeModels.getJsonObject(0).getString("steps"));
-        Assert.assertEquals("RESUME_REVIEW", routeModels.getJsonObject(0).getJsonArray("steps").
-                                                                getJsonObject(0).getString("type"));
-        Assert.assertEquals("REVIEWED", routeModels.getJsonObject(0).getJsonArray("steps").
-                                                                getJsonObject(0).getString("transition"));
-        Assert.assertEquals("Please review the resume", routeModels.getJsonObject(0).getJsonArray("steps").
-                                                                getJsonObject(0).getString("name"));
-        Assert.assertEquals("administrators", routeModels.getJsonObject(0).getJsonArray("steps").
-                                                                getJsonObject(0).getJsonObject("target").
-                                                                getString("name"));
-        Assert.assertEquals("GROUP", routeModels.getJsonObject(0).getJsonArray("steps").
-                                                                getJsonObject(0).getJsonObject("target").
-                                                                getString("type"));
-
-        // Delete the route model
-        target().path("/routemodel/" + routeModelId)
-                .request()
-                .cookie(TokenBasedSecurityFilter.COOKIE_NAME, adminToken)
-                .delete(JsonObject.class);
-    }
-
 }

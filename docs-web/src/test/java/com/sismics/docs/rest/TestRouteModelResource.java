@@ -169,7 +169,7 @@ public class TestRouteModelResource extends BaseJerseyTest {
                 .delete(JsonObject.class);
     }
 
-    /*
+    /**
      * Tests that we can update an existing workflow with the resume review type
      */
     @Test

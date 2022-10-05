@@ -592,8 +592,6 @@ public class TestRouteResource extends BaseJerseyTest {
         // Test: start a review workflow without completing it
         startWorkflow(documentId, oneReviewStepRouteModelId);
 
-        // Get the route and match it
-
         // Test: get the reviews from the database
         ReviewDao dao = new ReviewDao();
         Map<Route, List<Review>> results = dao.findByDocument(documentId);

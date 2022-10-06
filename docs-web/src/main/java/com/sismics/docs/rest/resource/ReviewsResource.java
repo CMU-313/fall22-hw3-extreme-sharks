@@ -43,6 +43,7 @@ public class ReviewsResource extends BaseResource {
      * @return Response
      */
     @GET
+    @Path("{id: [a-z0-9\\-]+}")
     public Response get(@PathParam("id") String documentId){
         authenticate();
 

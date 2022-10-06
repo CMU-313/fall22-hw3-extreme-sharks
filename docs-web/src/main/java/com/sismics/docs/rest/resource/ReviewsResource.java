@@ -42,7 +42,6 @@ public class ReviewsResource extends BaseResource {
      * @param documentId Document ID
      * @return Response
      */
-
     @GET
     public Response get(@PathParam("id") String documentId){
         authenticate();

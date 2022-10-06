@@ -96,7 +96,7 @@ public class ReviewDao {
     public List<String> getComments(String documentId) {
         EntityManager em = ThreadLocalContext.get().getEntityManager();
         Query q = em.createNativeQuery("select\n" +
-                "    RTP_COMMENT_C" +
+                "    RTP_COMMENT_C\n" +
                 "from T_ROUTE_STEP\n" +
                 "inner join T_ROUTE\n" +
                 "    on RTP_IDROUTE_C = RTE_ID_C\n" +

@@ -12,6 +12,7 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Response;
 
 import com.sismics.docs.core.dao.ReviewDao;
+import com.sismics.docs.core.dao.ReviewDao.ReviewComment;
 import com.sismics.docs.core.model.jpa.Review;
 import com.sismics.docs.core.model.jpa.Route;
 
@@ -35,7 +36,9 @@ public class ReviewsResource extends BaseResource {
      * @apiSuccess {Object[]} workflows.ratings The ratings array that contains all the ratings for a workflow on the document
      * @apiSuccess {String} workflows.ratings.category The category that a specific rating belongs to
      * @apiSuccess {Number} workflows.ratings.value The value of a specific rating (Range: 1-5)
-     * @apiSuccess {String[]} workflows.comments The comments array that contains all the comments for a workflow on the document
+     * @apiSuccess {Object[]} workflows.comments The comments array that contains all the comments for a workflow on the document
+     * @apiSuccess {String} workflows.comments.author The name of the author
+     * @apiSuccess {String} workflows.comments.contents The contents of the comment
      * @apiPermission user
      * @apiVersion 1.5.0
      *
@@ -43,16 +46,16 @@ public class ReviewsResource extends BaseResource {
      * @return Response
      */
     @GET
+    @Path("{id: [a-z0-9\\-]+}")
     public Response get(@PathParam("id") String documentId){
         authenticate();
-
+        
         // Review info
         ReviewDao reviewDao = new ReviewDao();
         Map<Route, List<Review>> reviews = reviewDao.findByDocument(documentId);
         if (reviews == null) {
             throw new NotFoundException();
         }
-        List<String> comments = reviewDao.getComments(documentId);
 
         // Add basic document info
         JsonObjectBuilder reviewsJson = Json.createObjectBuilder()
@@ -60,35 +63,38 @@ public class ReviewsResource extends BaseResource {
 
         
         JsonArrayBuilder workflowsJson = Json.createArrayBuilder();
-        List<Review> ratings = new ArrayList<>();;
-
-        // Iterate through the review aray to add ratings
-        for (Map.Entry<Route, List<Review>> entry : reviews.entrySet()){
-            ratings.addAll(entry.getValue());
-        }
-        JsonArrayBuilder ratingsJson = Json.createArrayBuilder();
-        for (Review r : ratings){
-            ratingsJson.add(Json.createObjectBuilder()
-                                .add("category", r.getCategory())
-                                .add("value", r.getValue()));
-        }
 
         // Iterate through the reviews aray to add workflow
         for (Map.Entry<Route, List<Review>> entry : reviews.entrySet()){
             Route route = entry.getKey();
 
+            // get ratings
+            JsonArrayBuilder ratingsJson = Json.createArrayBuilder();
+            for (Review r : entry.getValue()){
+                ratingsJson.add(Json.createObjectBuilder()
+                                    .add("category", r.getCategory())
+                                    .add("value", r.getValue()));
+            }
+
+            // get comments
+            JsonArrayBuilder commentsJson = Json.createArrayBuilder();
+            List<ReviewComment> comments = reviewDao.getComments(route.getId());
+            // System.out.println("Comments for " + route.getId());
+            // System.out.println(comments);
+            for (ReviewComment c : comments){
+                commentsJson.add(Json.createObjectBuilder()
+                                    .add("author", c.author)
+                                    .add("contents", c.contents));
+            }
+            
+            // workflow jsons
             workflowsJson.add(Json.createObjectBuilder()
                             .add("name", route.getName())
-                            .add("ratings", ratingsJson));
+                            .add("ratings", ratingsJson)
+                            .add("comments", commentsJson));
         }
 
-        // Iterate through the comments array to add comments to workflow
-        JsonArrayBuilder commentsJson = Json.createArrayBuilder();
-        for (String c : comments){
-            commentsJson.add(c);
-        }
-        workflowsJson.add(Json.createObjectBuilder()
-                                .add("comments", commentsJson));
+        reviewsJson.add("workflows", workflowsJson);
 
         return Response.ok().entity(reviewsJson.build()).build();
     }

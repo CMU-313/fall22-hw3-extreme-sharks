@@ -128,10 +128,26 @@ public class ReviewDao {
         return results;
     }
 
+    /**
+     * Data object containing a comment and its author name.
+     */
     public class ReviewComment {
+        /**
+         * The comment author
+         */
         public final String author;
+
+        /**
+         * The comment contents
+         */
         public final String contents;
 
+        /**
+         * Creates a new ReviewComment.
+         *
+         * @param author The author name
+         * @param contents The comment contents
+         */
         public ReviewComment(String author, String contents) {
             this.author = author;
             this.contents = contents;

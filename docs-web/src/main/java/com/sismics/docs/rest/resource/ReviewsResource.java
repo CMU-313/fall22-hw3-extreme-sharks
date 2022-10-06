@@ -37,6 +37,7 @@ public class ReviewsResource extends BaseResource {
      * @apiSuccess {String} workflows.ratings.category The category that a specific rating belongs to
      * @apiSuccess {Number} workflows.ratings.value The value of a specific rating (Range: 1-5)
      * @apiSuccess {Object[]} workflows.comments The comments array that contains all the comments for a workflow on the document
+     * @apiSuccess {Number} workflows.numRatings The number of ratings inside a workflow
      * @apiSuccess {String} workflows.comments.author The name of the author
      * @apiSuccess {String} workflows.comments.contents The contents of the comment
      * @apiPermission user
@@ -79,8 +80,6 @@ public class ReviewsResource extends BaseResource {
             // get comments
             JsonArrayBuilder commentsJson = Json.createArrayBuilder();
             List<ReviewComment> comments = reviewDao.getComments(route.getId());
-            // System.out.println("Comments for " + route.getId());
-            // System.out.println(comments);
             for (ReviewComment c : comments){
                 commentsJson.add(Json.createObjectBuilder()
                                     .add("author", c.author)
@@ -91,6 +90,7 @@ public class ReviewsResource extends BaseResource {
             workflowsJson.add(Json.createObjectBuilder()
                             .add("name", route.getName())
                             .add("ratings", ratingsJson)
+                            .add("numRatings", reviewDao.reviewsCount(route.getId()))
                             .add("comments", commentsJson));
         }
 

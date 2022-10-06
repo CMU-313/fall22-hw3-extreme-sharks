@@ -88,6 +88,24 @@ public class ReviewDao {
     }
 
     /**
+     * Returns the number of reviews given inside a workflow.
+     *
+     * @return List containing all the comments given to a document.
+     */
+    public int reviewsCount(String routeId) {
+        EntityManager em = ThreadLocalContext.get().getEntityManager();
+        Query q = em.createNativeQuery("select\n" +
+                "    COUNT(*)\n" +
+                "from T_ROUTE_STEP\n" +
+                "inner join T_USER on RTP_IDVALIDATORUSER_C = USE_ID_C\n" + 
+                "where RTP_IDROUTE_C = :routeId AND RTP_IDVALIDATORUSER_C is not null\n" +
+                "AND RTP_TYPE_C = 'RESUME_REVIEW'");
+        q.setParameter("routeId", routeId);
+
+        return ((Number)q.getSingleResult()).intValue();
+    }
+
+    /**
      * Returns the list of all comments in a document.
      *
      * @return List containing all the comments given to a document.
@@ -99,7 +117,8 @@ public class ReviewDao {
                 "    RTP_COMMENT_C, USE_USERNAME_C\n" +
                 "from T_ROUTE_STEP\n" +
                 "inner join T_USER on RTP_IDVALIDATORUSER_C = USE_ID_C\n" + 
-                "where RTP_IDROUTE_C = :routeId AND RTP_COMMENT_C != '' AND RTP_COMMENT_C is not null\n");
+                "where RTP_IDROUTE_C = :routeId AND RTP_COMMENT_C != '' AND RTP_COMMENT_C is not null\n" +
+                "AND RTP_TYPE_C = 'RESUME_REVIEW'");
         q.setParameter("routeId", routeId);
 
         List<ReviewComment> results = new ArrayList<>();

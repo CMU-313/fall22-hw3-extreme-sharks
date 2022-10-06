@@ -34,7 +34,6 @@ public class ReviewsResource extends BaseResource {
      * @apiName GetReview
      * @apiGroup Review
      * @apiParam {String} id Document ID
-     * @apiParam {String} share Share ID
      * @apiSuccess {String} id ID
      * @apiSuccess {String} title Title
      * @apiSuccess {String} description Description
@@ -48,17 +47,16 @@ public class ReviewsResource extends BaseResource {
      * @apiVersion 1.5.0
      *
      * @param documentId Document ID
-     * @param shareId Share ID
      * @return Response
      */
-
     @GET
-    public Response get(@PathParam("id") String documentId, @QueryParam("share") String shareId){
+    @Path("{id: [a-z0-9\\-]+}")
+    public Response get(@PathParam("id") String documentId){
         authenticate();
 
         // Document info
         DocumentDao documentDao = new DocumentDao();
-        DocumentDto documentDto = documentDao.getDocument(documentId, PermType.READ, getTargetIdList(shareId));
+        DocumentDto documentDto = documentDao.getDocument(documentId, PermType.READ, getTargetIdList(null));
 
         // Review info
         ReviewDao reviewDao = new ReviewDao();

@@ -1,1 +1,53 @@
-<p>hello</p>
+<!-- Workflow Name -->
+<!-- If there are no reviews, a message indicating that there are no reviews if that is the case-->
+<!-- Average of Reviews -->
+<!-- Comments -->
+
+<br>
+<strong class="well-sm">{{ document.route_step.name }}</strong>
+<br>
+<p class="well-sm">Average of {{ ratings.length }} reviews</p> <!--Reviews API-->
+<style>
+    .star-ratings {
+    unicode-bidi: bidi-override;
+    color: #ccc;
+    font-size: 20px;
+    position: relative;
+    margin: 0;
+    padding: 0;
+    }
+  .fill-ratings {
+    color: #e7711b;
+    padding: 0;
+    position: absolute;
+    z-index: 1;
+    top: 0;
+    left: 0;
+    overflow: hidden;
+  }
+  .empty-ratings {
+    position: relative;
+    padding: 0;
+    display: block;
+    z-index: 0;
+    display: inline-block;
+  }
+
+</style>
+
+<div ng-show="document.route_step.type == 'RESUME_REVIEW'">
+    <div class="ratings-stars" ng-repeat="(name, averageData) in averages">
+      <strong class="rating">{{ name }}</strong><br>
+      <div class="star-ratings">
+        <div class="empty-ratings">
+            <div class="fill-ratings" style="width: {{ (averageData.sum / averageData.count / 5) * 100 }}%;">
+            <span>★★★★★</span>
+            </div>
+          <span>★★★★★</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+

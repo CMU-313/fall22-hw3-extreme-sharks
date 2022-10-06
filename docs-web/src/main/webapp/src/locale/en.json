@@ -146,7 +146,8 @@
         "acl_permission": "Permission"
       },
       "reviews": {
-        "reviews": "Reviews"
+        "reviews": "Reviews",
+        "noreviews": "There are no reviews."
       },
       "activity": {
         "activity": "Activity",

@@ -3,11 +3,46 @@
 <!-- Average of Reviews -->
 <!-- Comments -->
 
-<br>
-<strong class="well-sm">{{ document.route_step.name }}</strong>
-<br>
-<p class="well-sm">Average of {{ ratings.length }} reviews</p> <!--Reviews API-->
+<div ng-if="reviewWorkflows">
+    <div class="workflow-reviews" ng-repeat="workflow in reviewWorkflows">
+        <h3>{{ workflow.name }}</h3>
+        <p class="well-sm">Average of {{ workflow.numReviews }} reviews</p>
+
+        <h4>Ratings</h4>
+        <div class="review-criteria">
+            <div class="review-criterion" ng-repeat="(name, averageData) in workflow.averages">
+                <strong class="rating">{{ name }}</strong>
+                <br>
+                <div class="star-ratings">
+                    <div class="empty-ratings">
+                        <div class="fill-ratings" style="width: {{ (averageData.sum / averageData.count / 5) * 100 }}%;">
+                            <span>★★★★★</span>
+                        </div>
+                        <span>★★★★★</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div ng-if="workflow.comments.length > 0">
+            <h4>Comments</h4>
+            <div class="review-comments">
+                <blockquote ng-repeat="comment in workflow.comments">
+                    <p>{{ comment.contents }}</p>
+                    <figcaption>— {{ comment.author }}</figcaption>
+                </blockquote>
+            </div>
+        </div>
+    </div>
+</div>
+
 <style>
+    .review-criteria {
+        display: flex;
+        gap: 16px 32px;
+        flex-wrap: wrap;
+    }
+
     .star-ratings {
     unicode-bidi: bidi-override;
     color: #ccc;
@@ -34,20 +69,3 @@
   }
 
 </style>
-
-<div ng-show="document.route_step.type == 'RESUME_REVIEW'">
-    <div class="ratings-stars" ng-repeat="(name, averageData) in averages">
-      <strong class="rating">{{ name }}</strong><br>
-      <div class="star-ratings">
-        <div class="empty-ratings">
-            <div class="fill-ratings" style="width: {{ (averageData.sum / averageData.count / 5) * 100 }}%;">
-            <span>★★★★★</span>
-            </div>
-          <span>★★★★★</span>
-        </div>
-      </div>
-    </div>
-  </div>
-
-
-

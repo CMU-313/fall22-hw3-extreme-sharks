@@ -127,6 +127,11 @@
                   ng-click="validateWorkflow('REJECTED')">
               {{ 'workflow_transition.REJECTED' | translate }}
             </span>
+            <span class="btn btn-danger"
+                  ng-show="document.route_step.type == 'RESUME_REVIEW'"
+                  ng-click="validateWorkflow('REVIEWED')">
+              {{ 'workflow_transition.REVIEWED' | translate }}
+            </span>
           </p>
         </div>
       </div>

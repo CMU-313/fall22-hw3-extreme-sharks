@@ -106,34 +106,57 @@
           {{ 'document.view.workflow_current' | translate }}
         </p>
         <style>
-          /* Rating Code inspired by https://codepen.io/hesguru/pen/BaybqXv */
-          .ratings-stars {
-            height: 60px;
-            padding: 0 10px;
-            text-align: left;
+          /* Rating Code adapted and sourced from https://codepen.io/hesguru/pen/BaybqXv */
+
+          .ratings-wrapper {
+            padding: 1em 0;
+            max-width: 130px;
+            margin: 0 auto;
           }
-          .ratings-stars:not(:checked) > input {
+
+          .ratings {
+            text-align: left;
+            padding: .2em 0;
+          }
+
+          .ratings-title {
+            -ms-hyphens: auto;
+            -moz-hyphens: auto;
+            -webkit-hyphens: auto;
+            hyphens: auto;
+          }
+
+          .ratings-stars {
+            display: flex;
+            flex-direction: row-reverse;
+            justify-content: flex-end;
+          }
+
+          .ratings-stars > input {
             position: absolute;
             top: -9999px;
           }
-          .ratings-stars:not(:checked) > label {
-            text-align: left;
-            float: right;
-            width: 1em;
+
+          .ratings-stars > label {
+            width: 26px;
             overflow: hidden;
             white-space: nowrap;
             cursor: pointer;
-            font-size: 20px;
             color: #ddd;
+            font-size: 0;
           }
-          .ratings-stars:not(:checked) > label:before {
-            content: "★ ";
+
+          .ratings-stars > label:before {
+            content: "★";
+            font-size: 20px;
           }
+
           .ratings-stars > input:checked ~ label {
             color: #5bc0de;
           }
-          .ratings-stars:not(:checked) > label:hover,
-          .ratings-stars:not(:checked) > label:hover ~ label {
+
+          .ratings-stars > label:hover,
+          .ratings-stars > label:hover ~ label {
             color: #46b8da;
           }
         </style>
@@ -148,20 +171,21 @@
           </p>
 
           <p ng-show="document.route_step.transitionable">
-
-            <div ng-show="document.route_step.type == 'RESUME_REVIEW'">
-              <div class="ratings-stars" ng-repeat="category in ratingCategories">
-                <strong class="rating">{{ category.name }}</strong><br>
-                <input type="radio" id="-{{ category.id }}star5" name="{{ category.id }}" value="5" ng-model="category.value">
-                <label for="star5-{{ category.id }}" title="text">5 stars</label>
-                <input type="radio" id="star4-{{ category.id }}" name="{{ category.id }}" value="4" ng-model="category.value">
-                <label for="star4-{{ category.id }}" title="text">4 stars</label>
-                <input type="radio" id="star3-{{ category.id }}" name="{{ category.id }}" value="3" ng-model="category.value">
-                <label for="star3-{{ category.id }}" title="text">3 stars</label>
-                <input type="radio" id="star2-{{ category.id }}" name="{{ category.id }}" value="2" ng-model="category.value">
-                <label for="star2-{{ category.id }}" title="text">2 stars</label>
-                <input type="radio" id="star1-{{ category.id }}" name="{{ category.id }}" value="1" ng-model="category.value">
-                <label for="star1-{{ category.id }}" title="text">1 star</label>
+            <div class="ratings-wrapper" ng-show="document.route_step.type == 'RESUME_REVIEW'">
+              <div class="ratings" ng-repeat="category in ratingCategories">
+                <strong class="ratings-title">{{ category.name }}</strong><br>
+                <div class="ratings-stars">
+                  <input type="radio" id="star5-{{ category.id }}" name="{{ category.id }}" value="5" ng-model="category.value">
+                  <label for="star5-{{ category.id }}" title="text">5 stars</label>
+                  <input type="radio" id="star4-{{ category.id }}" name="{{ category.id }}" value="4" ng-model="category.value">
+                  <label for="star4-{{ category.id }}" title="text">4 stars</label>
+                  <input type="radio" id="star3-{{ category.id }}" name="{{ category.id }}" value="3" ng-model="category.value">
+                  <label for="star3-{{ category.id }}" title="text">3 stars</label>
+                  <input type="radio" id="star2-{{ category.id }}" name="{{ category.id }}" value="2" ng-model="category.value">
+                  <label for="star2-{{ category.id }}" title="text">2 stars</label>
+                  <input type="radio" id="star1-{{ category.id }}" name="{{ category.id }}" value="1" ng-model="category.value">
+                  <label for="star1-{{ category.id }}" title="text">1 star</label>
+                </div>
               </div>
             </div>
           

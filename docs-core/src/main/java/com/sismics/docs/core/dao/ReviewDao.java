@@ -12,7 +12,7 @@ import java.util.*;
 /**
  * Review DAO.
  *
- * @author Nicolas Ettlin
+ * @author Nicolas Ettlin, Ziqi Ding
  */
 public class ReviewDao {
     /**
@@ -40,7 +40,7 @@ public class ReviewDao {
      */
     @SuppressWarnings("unchecked")
     public Map<Route, List<Review>> findByDocument(String documentId) {
-        EntityManager em = ThreadLocalContext.get().getEntityManager(); // NULL?
+        EntityManager em = ThreadLocalContext.get().getEntityManager();
         Query q = em.createNativeQuery("select\n" +
                 "    RTE_ID_C, RTE_IDDOCUMENT_C, RTE_NAME_C, RTE_CREATEDATE_D, RTE_DELETEDATE_D,\n" +
                 "    REV_ID_C, REV_IDROUTESTEP_C, REV_CATEGORY_C, REV_VALUE_DBL \n" +
@@ -85,5 +85,53 @@ public class ReviewDao {
         HashMap<Route, List<Review>> result = new HashMap<>();
         byRouteId.forEach((routeId, pair) -> result.put(pair.getLeft(), pair.getRight()));
         return result;
+    }
+
+    /**
+     * Returns the list of all comments in a document.
+     *
+     * @return List containing all the comments given to a document.
+     */
+    @SuppressWarnings("unchecked")
+    public List<ReviewComment> getComments(String routeId) {
+        EntityManager em = ThreadLocalContext.get().getEntityManager();
+        Query q = em.createNativeQuery("select\n" +
+                "    RTP_COMMENT_C, USE_USERNAME_C\n" +
+                "from T_ROUTE_STEP\n" +
+                "inner join T_USER on RTP_IDVALIDATORUSER_C = USE_ID_C\n" + 
+                "where RTP_IDROUTE_C = :routeId AND RTP_COMMENT_C != '' AND RTP_COMMENT_C is not null\n");
+        q.setParameter("routeId", routeId);
+
+        List<ReviewComment> results = new ArrayList<>();
+        for (Object[] row : (List<Object[]>)q.getResultList()) {
+            results.add(new ReviewComment((String) row[1], (String) row[0]));
+        }
+        return results;
+    }
+
+    /**
+     * Data object containing a comment and its author name.
+     */
+    public class ReviewComment {
+        /**
+         * The comment author
+         */
+        public final String author;
+
+        /**
+         * The comment contents
+         */
+        public final String contents;
+
+        /**
+         * Creates a new ReviewComment.
+         *
+         * @param author The author name
+         * @param contents The comment contents
+         */
+        public ReviewComment(String author, String contents) {
+            this.author = author;
+            this.contents = contents;
+        }
     }
 }

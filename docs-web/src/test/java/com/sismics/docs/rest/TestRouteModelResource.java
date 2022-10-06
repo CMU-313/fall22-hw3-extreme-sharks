@@ -121,7 +121,6 @@ public class TestRouteModelResource extends BaseJerseyTest {
         Assert.assertEquals(routeModelId, json.getString("id"));
         Assert.assertEquals("Workflow validation 2", json.getString("name"));
         Assert.assertEquals("[{\"type\":\"APPROVE\",\"transitions\":[{\"name\":\"APPROVED\",\"actions\":[{\"type\":\"ADD_TAG\",\"tag\":\"" + tagRouteId + "\"}]},{\"name\":\"REJECTED\",\"actions\":[]}],\"target\":{\"name\":\"administrators\",\"type\":\"GROUP\"},\"name\":\"Check the document's metadata\"}]", json.getString("steps"));
-
         // Delete the route model
         target().path("/routemodel/" + routeModelId)
                 .request()

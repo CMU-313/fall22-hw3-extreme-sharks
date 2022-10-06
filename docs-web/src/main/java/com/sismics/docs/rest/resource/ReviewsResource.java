@@ -9,16 +9,11 @@ import javax.ws.rs.GET;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
-import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
 
-import com.sismics.docs.core.constant.PermType;
-import com.sismics.docs.core.dao.DocumentDao;
 import com.sismics.docs.core.dao.ReviewDao;
-import com.sismics.docs.core.dao.dto.DocumentDto;
 import com.sismics.docs.core.model.jpa.Review;
 import com.sismics.docs.core.model.jpa.Route;
-import com.sismics.util.JsonUtil;
 
 /**
  * Reviews REST resources.
@@ -34,10 +29,7 @@ public class ReviewsResource extends BaseResource {
      * @apiName GetReview
      * @apiGroup Review
      * @apiParam {String} id Document ID
-     * @apiParam {String} share Share ID
      * @apiSuccess {String} id ID
-     * @apiSuccess {String} title Title
-     * @apiSuccess {String} description Description
      * @apiSuccess {Object[]} workflows The workflow array that shows all the workflows and reviews
      * @apiSuccess {String} workflows.name The name of one of the workflows.
      * @apiSuccess {Object[]} workflows.ratings The ratings array that contains all the ratings for a workflow on the document
@@ -48,17 +40,12 @@ public class ReviewsResource extends BaseResource {
      * @apiVersion 1.5.0
      *
      * @param documentId Document ID
-     * @param shareId Share ID
      * @return Response
      */
 
     @GET
-    public Response get(@PathParam("id") String documentId, @QueryParam("share") String shareId){
+    public Response get(@PathParam("id") String documentId){
         authenticate();
-
-        // Document info
-        DocumentDao documentDao = new DocumentDao();
-        DocumentDto documentDto = documentDao.getDocument(documentId, PermType.READ, getTargetIdList(shareId));
 
         // Review info
         ReviewDao reviewDao = new ReviewDao();
@@ -70,9 +57,7 @@ public class ReviewsResource extends BaseResource {
 
         // Add basic document info
         JsonObjectBuilder reviewsJson = Json.createObjectBuilder()
-                .add("id", documentDto.getId())
-                .add("title", documentDto.getTitle())
-                .add("description", JsonUtil.nullable(documentDto.getDescription()));
+                .add("id", documentId);
 
         
         JsonArrayBuilder workflowsJson = Json.createArrayBuilder();

@@ -79,8 +79,6 @@ public class ReviewsResource extends BaseResource {
             // get comments
             JsonArrayBuilder commentsJson = Json.createArrayBuilder();
             List<ReviewComment> comments = reviewDao.getComments(route.getId());
-            // System.out.println("Comments for " + route.getId());
-            // System.out.println(comments);
             for (ReviewComment c : comments){
                 commentsJson.add(Json.createObjectBuilder()
                                     .add("author", c.author)

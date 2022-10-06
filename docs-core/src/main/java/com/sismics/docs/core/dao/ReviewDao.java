@@ -93,20 +93,29 @@ public class ReviewDao {
      * @return List containing all the comments given to a document.
      */
     @SuppressWarnings("unchecked")
-    public List<String> getComments(String documentId) {
+    public List<ReviewComment> getComments(String routeId) {
         EntityManager em = ThreadLocalContext.get().getEntityManager();
         Query q = em.createNativeQuery("select\n" +
-                "    RTP_COMMENT_C\n" +
+                "    RTP_COMMENT_C, USE_USERNAME_C\n" +
                 "from T_ROUTE_STEP\n" +
-                "inner join T_ROUTE\n" +
-                "    on RTP_IDROUTE_C = RTE_ID_C\n" +
-                "    and RTP_TYPE_C = 'RESUME_REVIEW'\n" +
-                "    and RTP_DELETEDATE_D is null\n" +
-                "left join T_REVIEW on REV_IDROUTESTEP_C = RTP_ID_C\n" +
-                "where RTE_IDDOCUMENT_C = :documentId\n" +
-                "and RTP_COMMENT_C is not null and RTP_COMMENT_C != ''");
-        q.setParameter("documentId", documentId);
+                "inner join T_USER on RTP_IDVALIDATORUSER_C = USE_ID_C\n" + 
+                "where RTP_IDROUTE_C = :routeId AND RTP_COMMENT_C != '' AND RTP_COMMENT_C is not null\n");
+        q.setParameter("routeId", routeId);
 
-        return (List<String>)q.getResultList();
+        List<ReviewComment> results = new ArrayList<>();
+        for (Object[] row : (List<Object[]>)q.getResultList()) {
+            results.add(new ReviewComment((String) row[1], (String) row[0]));
+        }
+        return results;
+    }
+
+    public class ReviewComment {
+        public final String author;
+        public final String contents;
+
+        public ReviewComment(String author, String contents) {
+            this.author = author;
+            this.contents = contents;
+        }
     }
 }

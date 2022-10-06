@@ -12,7 +12,7 @@ import java.util.*;
 /**
  * Review DAO.
  *
- * @author Nicolas Ettlin
+ * @author Nicolas Ettlin, Ziqi Ding
  */
 public class ReviewDao {
     /**
@@ -40,7 +40,7 @@ public class ReviewDao {
      */
     @SuppressWarnings("unchecked")
     public Map<Route, List<Review>> findByDocument(String documentId) {
-        EntityManager em = ThreadLocalContext.get().getEntityManager(); // NULL?
+        EntityManager em = ThreadLocalContext.get().getEntityManager();
         Query q = em.createNativeQuery("select\n" +
                 "    RTE_ID_C, RTE_IDDOCUMENT_C, RTE_NAME_C, RTE_CREATEDATE_D, RTE_DELETEDATE_D,\n" +
                 "    REV_ID_C, REV_IDROUTESTEP_C, REV_CATEGORY_C, REV_VALUE_DBL \n" +
@@ -85,5 +85,28 @@ public class ReviewDao {
         HashMap<Route, List<Review>> result = new HashMap<>();
         byRouteId.forEach((routeId, pair) -> result.put(pair.getLeft(), pair.getRight()));
         return result;
+    }
+
+    /**
+     * Returns the list of all comments in a document.
+     *
+     * @return List containing all the comments given to a document.
+     */
+    @SuppressWarnings("unchecked")
+    public List<String> getComments(String documentId) {
+        EntityManager em = ThreadLocalContext.get().getEntityManager();
+        Query q = em.createNativeQuery("select\n" +
+                "    RTP_COMMENT_C" +
+                "from T_ROUTE_STEP\n" +
+                "inner join T_ROUTE\n" +
+                "    on RTP_IDROUTE_C = RTE_ID_C\n" +
+                "    and RTP_TYPE_C = 'RESUME_REVIEW'\n" +
+                "    and RTP_DELETEDATE_D is null\n" +
+                "left join T_REVIEW on REV_IDROUTESTEP_C = RTP_ID_C\n" +
+                "where RTE_IDDOCUMENT_C = :documentId\n" +
+                "and RTP_COMMENT_C is not null and RTP_COMMENT_C != ''");
+        q.setParameter("documentId", documentId);
+
+        return (List<String>)q.getResultList();
     }
 }

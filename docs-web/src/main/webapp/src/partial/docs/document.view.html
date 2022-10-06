@@ -146,7 +146,7 @@
             <div ng-show="document.route_step.type == 'RESUME_REVIEW'">
               <div class="ratings-stars" ng-repeat="category in ratingCategories">
                 <strong class="rating">{{ category.name }}</strong><br>
-                <input type="radio" id="-{{ category.id }}star5" name="{{ category.id }}" value="5" ng-model="category.value">
+                <input type="radio" id="star5-{{ category.id }}" name="{{ category.id }}" value="5" ng-model="category.value">
                 <label for="star5-{{ category.id }}" title="text">5 stars</label>
                 <input type="radio" id="star4-{{ category.id }}" name="{{ category.id }}" value="4" ng-model="category.value">
                 <label for="star4-{{ category.id }}" title="text">4 stars</label>

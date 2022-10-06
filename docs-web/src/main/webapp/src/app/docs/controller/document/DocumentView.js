@@ -145,7 +145,7 @@ angular.module('docs').controller('DocumentView', function ($scope, $rootScope, 
   /**
    * Validate the workflow.
    */
-  $scope.ratingCategories = ['GPA', 'Skills', 'Extracurriculars', 'Experience'].map(function(name) {
+  $scope.ratingCategories = ['GRE', 'GPA', 'Skills', 'Experience', 'Extracurriculars'].map(function(name) {
     return {
       id: name.toLowerCase().replace(' ', ''),
       name,

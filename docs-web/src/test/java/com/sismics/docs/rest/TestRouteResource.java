@@ -743,11 +743,6 @@ public class TestRouteResource extends BaseJerseyTest {
      */
     @Test
     public void testGetRouteWithReview(){
-        // Setup: Initialize the entity manager (needed so we can query the database from the test)
-        EntityManager em = EMF.get().createEntityManager();
-        ThreadLocalContext.get().setEntityManager(em);
-        em.getTransaction().begin();
-
         // Setup: Get the access token
         token = clientUtil.login("admin", "admin", false);
 

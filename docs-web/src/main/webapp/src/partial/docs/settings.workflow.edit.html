@@ -48,7 +48,7 @@
                     <span class="input-group-addon">
                       <span class="fas fa-exchange-alt" ng-if="step.type == 'APPROVE'"></span>
                       <span class="fas fa-check-circle" ng-if="step.type == 'VALIDATE'"></span>
-                      <span class="far fa-file" ng-if="step.type == 'RESUME_REVIEW'"></span>
+                      <span class="fas fa-file" ng-if="step.type == 'RESUME_REVIEW'"></span>
                     </span>
                     <select class="form-control" name="type-{{ $index }}" ng-model="step.type" ng-change="updateTransitions(step)" required>
                       <option value="APPROVE">{{ 'settings.workflow.edit.type_approve' | translate }}</option>

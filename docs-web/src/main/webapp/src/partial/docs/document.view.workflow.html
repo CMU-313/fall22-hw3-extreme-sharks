@@ -52,7 +52,7 @@
   </thead>
   <tbody>
   <tr ng-repeat="step in route.steps" ng-class="{
-          'bg-success': step.transition == 'VALIDATED' || step.transition == 'APPROVED',
+          'bg-success': step.transition == 'VALIDATED' || step.transition == 'APPROVED' || step.transition == 'REVIEWED',
           'bg-danger': step.transition == 'REJECTED'
       }">
     <td>
@@ -71,7 +71,7 @@
           {{ step.end_date | timeAgo: dateTimeFormat }}
           by
         <a href="#/user/{{ step.validator_username }}" class="label label-default">{{ step.validator_username }}</a>
-        <span ng-show="step.comment" class="text-">
+        <span ng-show="step.comment && step.transition != 'REVIEWED'" class="text-">
           <br/><em>{{ step.comment }}</em>
         </span>
       </span>

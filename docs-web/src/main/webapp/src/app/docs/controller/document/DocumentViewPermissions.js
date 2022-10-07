@@ -11,3 +11,4 @@ angular.module('docs').controller('DocumentViewPermissions', function($scope) {
     });
   });
 });
+

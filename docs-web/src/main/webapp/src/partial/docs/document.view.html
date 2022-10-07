@@ -91,6 +91,11 @@
             <span class="fas fa-tasks"></span> {{ 'document.view.activity' | translate }}
           </a>
         </li>
+        <li ng-class="{ active: $state.current.name == 'document.view.reviews' }">
+          <a href="#/document/view/{{ document.id }}/reviews">
+            <span class="far fa-file"></span> {{ 'document.view.reviews' | translate }}
+          </a>
+        </li>
       </ul>
       <div ui-view="tab"></div>
     </div>

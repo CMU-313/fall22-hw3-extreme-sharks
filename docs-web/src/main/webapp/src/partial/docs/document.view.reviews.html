@@ -4,12 +4,21 @@
 <!-- Comments -->
 
 <div ng-if="reviewWorkflows">
+    <p ng-if="reviewWorkflows.length === 0">
+        No workflow exists with a resume review step.
+    </p>
     <div class="workflow-reviews" ng-repeat="workflow in reviewWorkflows">
         <h3>{{ workflow.name }}</h3>
-        <p class="well-sm">Average of {{ workflow.numReviews }} reviews</p>
 
         <h4>Ratings</h4>
-        <div class="review-criteria">
+        <p ng-if="workflow.numReviews > 1">Average of {{ workflow.numReviews }} reviews</p>
+        <p ng-if="workflow.numReviews === 1">One review</p>
+
+        <p ng-if="workflow.ratings.length === 0">
+            No reviews so far on this workflow.
+        </p>
+
+        <div class="review-criteria" ng-if="workflow.ratings.length > 0">
             <div class="review-criterion" ng-repeat="(name, averageData) in workflow.averages">
                 <strong class="rating">{{ name }}</strong>
                 <br>

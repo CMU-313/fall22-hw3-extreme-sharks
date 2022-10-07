@@ -18,6 +18,16 @@ angular.module('docs').controller('DocumentViewReviews', function ($scope, $root
                 workflow.averages[rating.category].sum += rating.value
             });
 
+            // Overall
+            function sum(array) {
+                return array.reduce(function(a, b) { return a + b }, 0);
+            }
+
+            workflow.averages['Overall'] = {
+                count: sum(Object.values(workflow.averages).map(a => a.count)),
+                sum: sum(Object.values(workflow.averages).map(a => a.sum)),
+            };
+
             return workflow;
         });
     });

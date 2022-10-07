@@ -50,7 +50,8 @@ public class ReviewDao {
                 "    and RTP_TYPE_C = 'RESUME_REVIEW'\n" +
                 "    and RTP_DELETEDATE_D is null\n" +
                 "left join T_REVIEW on REV_IDROUTESTEP_C = RTP_ID_C\n" +
-                "where RTE_IDDOCUMENT_C = :documentId");
+                "where RTE_IDDOCUMENT_C = :documentId\n" +
+                "order by RTP_ENDDATE_D");
         q.setParameter("documentId", documentId);
 
         HashMap<String, Pair<Route, List<Review>>> byRouteId = new HashMap<>(); // route id → (route, reviews)
@@ -82,7 +83,7 @@ public class ReviewDao {
             byRouteId.get(routeId).getRight().add(review);
         }
 
-        HashMap<Route, List<Review>> result = new HashMap<>();
+        TreeMap<Route, List<Review>> result = new TreeMap<>((rev1, rev2) -> rev2.getCreateDate().compareTo(rev1.getCreateDate()));
         byRouteId.forEach((routeId, pair) -> result.put(pair.getLeft(), pair.getRight()));
         return result;
     }
@@ -99,7 +100,8 @@ public class ReviewDao {
                 "    RTP_COMMENT_C, USE_USERNAME_C\n" +
                 "from T_ROUTE_STEP\n" +
                 "inner join T_USER on RTP_IDVALIDATORUSER_C = USE_ID_C\n" + 
-                "where RTP_IDROUTE_C = :routeId AND RTP_COMMENT_C != '' AND RTP_COMMENT_C is not null\n");
+                "where RTP_IDROUTE_C = :routeId AND RTP_COMMENT_C != '' AND RTP_COMMENT_C is not null\n" +
+                "order by RTP_ENDDATE_D");
         q.setParameter("routeId", routeId);
 
         List<ReviewComment> results = new ArrayList<>();

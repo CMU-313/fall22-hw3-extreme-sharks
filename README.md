@@ -45,8 +45,8 @@ Teedy is an open source, lightweight document management system for individuals 
 
 ## Part 1: Creating the Workflow
 
-1.Make a new workflow: Head to profile -> General settigs -> Workflow -> Add a workflow
-2. Fill in the info for the text fields, and select Resume Review underneth the drop down menu, Step type. (Note that you can add multiple reviews to one workflow. Each step is intended to be reviewed by different users or groups.)
+1.Make a new workflow: Head to profile -> General settings -> Workflow -> Add a workflow
+2. Fill in the info for the text fields, and select Resume Review underneath the drop down menu, Step type. (Note that you can add multiple reviews to one workflow. Each step is intended to be reviewed by different users or groups.)
 3. Once you are satisfied with the number of steps, hit save.
 
 ## Part 2: Creating the Review

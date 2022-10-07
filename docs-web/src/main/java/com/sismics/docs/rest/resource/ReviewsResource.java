@@ -11,8 +11,11 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Response;
 
+import com.sismics.docs.core.constant.PermType;
+import com.sismics.docs.core.dao.DocumentDao;
 import com.sismics.docs.core.dao.ReviewDao;
 import com.sismics.docs.core.dao.ReviewDao.ReviewComment;
+import com.sismics.docs.core.dao.dto.DocumentDto;
 import com.sismics.docs.core.model.jpa.Review;
 import com.sismics.docs.core.model.jpa.Route;
 
@@ -49,6 +52,12 @@ public class ReviewsResource extends BaseResource {
     @Path("{id: [a-z0-9\\-]+}")
     public Response get(@PathParam("id") String documentId){
         authenticate();
+
+        DocumentDao documentDao = new DocumentDao();
+        DocumentDto documentDto = documentDao.getDocument(documentId, PermType.READ, getTargetIdList(null));
+        if (documentDto == null) {
+            throw new NotFoundException();
+        }
         
         // Review info
         ReviewDao reviewDao = new ReviewDao();

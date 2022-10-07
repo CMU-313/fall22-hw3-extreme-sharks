@@ -4,7 +4,7 @@
 <!-- Comments -->
 
 <div ng-if="reviewWorkflows">
-    <p ng-if="reviewWorkflows.length === 0">
+    <p class="lead mt" ng-if="reviewWorkflows.length === 0">
         No workflow exists with a resume review step.
     </p>
     <div class="workflow-reviews" ng-repeat="workflow in reviewWorkflows">
@@ -24,7 +24,8 @@
                 <br>
                 <div class="star-ratings">
                     <div class="empty-ratings">
-                        <div class="fill-ratings" style="width: {{ (averageData.sum / averageData.count / 5) * 100 }}%;">
+                        <div class="fill-ratings"
+                             style="width: {{ (averageData.sum / averageData.count / 5) * 100 }}%;">
                             <span>★★★★★</span>
                         </div>
                         <span>★★★★★</span>
@@ -46,8 +47,8 @@
 </div>
 
 <style>
-    .workflow-reviews p {
-        margin: 1em 0;
+    .lead.mt {
+        margin-top: 1em;
     }
 
     .workflow-reviews h3 {
@@ -63,10 +64,6 @@
         margin-bottom: 1em;
     }
 
-    .workflow-reviews blockquote p {
-        margin: .2em 0;
-    }
-
     .workflow-reviews blockquote figcaption {
         font-weight: 600;
     }
@@ -75,31 +72,34 @@
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
         gap: 16px 32px;
+        margin-bottom: 2em;
     }
 
     .star-ratings {
-    unicode-bidi: bidi-override;
-    color: #ccc;
-    font-size: 20px;
-    position: relative;
-    margin: 0;
-    padding: 0;
+        unicode-bidi: bidi-override;
+        color: #ccc;
+        font-size: 20px;
+        position: relative;
+        margin: 0;
+        padding: 0;
     }
-  .fill-ratings {
-    color: #e7711b;
-    padding: 0;
-    position: absolute;
-    z-index: 1;
-    top: 0;
-    left: 0;
-    overflow: hidden;
-  }
-  .empty-ratings {
-    position: relative;
-    padding: 0;
-    display: block;
-    z-index: 0;
-    display: inline-block;
-  }
+
+    .fill-ratings {
+        color: #e7711b;
+        padding: 0;
+        position: absolute;
+        z-index: 1;
+        top: 0;
+        left: 0;
+        overflow: hidden;
+    }
+
+    .empty-ratings {
+        position: relative;
+        padding: 0;
+        display: block;
+        z-index: 0;
+        display: inline-block;
+    }
 
 </style>

@@ -38,7 +38,7 @@
             <div class="review-comments">
                 <blockquote ng-repeat="comment in workflow.comments">
                     <p>{{ comment.contents }}</p>
-                    <figcaption>— {{ comment.author }}</figcaption>
+                    <figcaption>{{ comment.author }}</figcaption>
                 </blockquote>
             </div>
         </div>
@@ -46,10 +46,35 @@
 </div>
 
 <style>
+    .workflow-reviews p {
+        margin: 1em 0;
+    }
+
+    .workflow-reviews h3 {
+        font-weight: 500;
+        margin-top: 1.2em;
+    }
+
+    .workflow-reviews h4 {
+        margin-top: 1.5em;
+    }
+
+    .workflow-reviews blockquote {
+        margin-bottom: 1em;
+    }
+
+    .workflow-reviews blockquote p {
+        margin: .2em 0;
+    }
+
+    .workflow-reviews blockquote figcaption {
+        font-weight: 600;
+    }
+
     .review-criteria {
-        display: flex;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
         gap: 16px 32px;
-        flex-wrap: wrap;
     }
 
     .star-ratings {

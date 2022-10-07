@@ -5,17 +5,21 @@
 
 <div ng-if="reviewWorkflows">
     <p class="lead mt" ng-if="reviewWorkflows.length === 0">
-        No workflow exists with a resume review step.
+        {{ 'document.view.reviews.no_workflow' | translate }}
     </p>
     <div class="workflow-reviews" ng-repeat="workflow in reviewWorkflows">
         <h3>{{ workflow.name }}</h3>
 
-        <h4>Ratings</h4>
-        <p ng-if="workflow.numReviews > 1">Average of {{ workflow.numReviews }} reviews</p>
-        <p ng-if="workflow.numReviews === 1">One review</p>
+        <h4>{{ 'document.view.reviews.ratings' | translate }}</h4>
+        <p ng-if="workflow.numReviews > 1"
+           translate="document.view.reviews.average_multiple"
+           translate-values="{ numReviews: workflow.numReviews }"></p>
+        <p ng-if="workflow.numReviews === 1">
+            {{ 'document.view.reviews.average_single' | translate }}
+        </p>
 
         <p ng-if="workflow.ratings.length === 0">
-            No reviews so far on this workflow.
+            {{ 'document.view.reviews.average_none' | translate }}
         </p>
 
         <div class="review-criteria" ng-if="workflow.ratings.length > 0">
@@ -35,7 +39,7 @@
         </div>
 
         <div ng-if="workflow.comments.length > 0">
-            <h4>Comments</h4>
+            <h4>{{ 'document.view.reviews.comments' | translate }}</h4>
             <div class="review-comments">
                 <blockquote ng-repeat="comment in workflow.comments">
                     <p>{{ comment.contents }}</p>

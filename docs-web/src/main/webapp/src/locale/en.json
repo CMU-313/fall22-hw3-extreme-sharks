@@ -147,7 +147,12 @@
       },
       "reviews": {
         "reviews": "Reviews",
-        "noreviews": "There are no reviews."
+        "ratings": "Ratings",
+        "comments": "Comments",
+        "no_workflow": "No workflow exists with a resume review step.",
+        "average_multiple": "Average of {{ numReviews }} reviews",
+        "average_single": "One review",
+        "average_none": "No reviews so far on this workflow."
       },
       "activity": {
         "activity": "Activity",

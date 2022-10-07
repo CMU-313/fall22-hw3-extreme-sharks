@@ -25,6 +25,7 @@ Teedy is an open source, lightweight document management system for individuals 
 - 256-bit AES encryption of stored files
 - File versioning ![New!](https://www.sismics.com/public/img/new.png)
 - Tag system with nesting
+- Workflow System including validatations, acceptances/rejections, and reviews
 - Import document from email (EML format)
 - Automatic inbox scanning and importing
 - User/group permission system
@@ -39,6 +40,24 @@ Teedy is an open source, lightweight document management system for individuals 
 - Fully featured Android client
 - [Bulk files importer](https://github.com/sismics/docs/tree/master/docs-importer) (single or scan mode)
 - Tested to one million documents
+
+# Added Feature: Resume Review Step in Workflow
+
+## Part 1: Creating the Workflow
+
+1.Make a new workflow: Head to profile -> General settings -> Workflow -> Add a workflow
+2. Fill in the info for the text fields, and select Resume Review underneath the drop down menu, Step type. (Note that you can add multiple reviews to one workflow. Each step is intended to be reviewed by different users or groups.)
+3. Once you are satisfied with the number of steps, hit save.
+
+## Part 2: Creating the Review
+1. Head over to Documents, and select the document you wish to review.
+2. Head over to the Workflow Tab and start the new workflow you created in Step 1. 
+3. For each review step, the assigned user should hover over the stars for each category, and then click the star to assign/change their rating.
+4. Hit review to finish the review step.
+
+# Part 3: Review Tab
+
+1. Access the average reviews by navigating to the reivews tab. If there are no workflows with a resume review step, then a message is shown to indicate the absense of reviews. Otherwise, the average of the reviews in all steps are shown.
 
 
 # Native Installation

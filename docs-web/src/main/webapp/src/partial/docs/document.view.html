@@ -91,6 +91,11 @@
             <span class="fas fa-tasks"></span> {{ 'document.view.activity' | translate }}
           </a>
         </li>
+        <li ng-class="{ active: $state.current.name == 'document.view.reviews' }">
+          <a href="#/document/view/{{ document.id }}/reviews">
+            <span class="far fa-file"></span> {{ 'document.view.reviews' | translate }}
+          </a>
+        </li>
       </ul>
       <div ui-view="tab"></div>
     </div>
@@ -100,16 +105,90 @@
           <span class="fas fa-random"></span>
           {{ 'document.view.workflow_current' | translate }}
         </p>
+        <style>
+          /* Rating Code adapted and sourced from https://codepen.io/hesguru/pen/BaybqXv */
 
+          .ratings-wrapper {
+            padding: 1em 0;
+            max-width: 130px;
+            margin: 0 auto;
+          }
+
+          .ratings {
+            text-align: left;
+            padding: .2em 0;
+          }
+
+          .ratings-title {
+            -ms-hyphens: auto;
+            -moz-hyphens: auto;
+            -webkit-hyphens: auto;
+            hyphens: auto;
+          }
+
+          .ratings-stars {
+            display: flex;
+            flex-direction: row-reverse;
+            justify-content: flex-end;
+          }
+
+          .ratings-stars > input {
+            position: absolute;
+            top: -9999px;
+          }
+
+          .ratings-stars > label {
+            width: 26px;
+            overflow: hidden;
+            white-space: nowrap;
+            cursor: pointer;
+            color: #ddd;
+            font-size: 0;
+          }
+
+          .ratings-stars > label:before {
+            content: "★";
+            font-size: 20px;
+          }
+
+          .ratings-stars > input:checked ~ label {
+            color: #5bc0de;
+          }
+
+          .ratings-stars > label:hover,
+          .ratings-stars > label:hover ~ label {
+            color: #46b8da;
+          }
+        </style>
         <div class="text-center card">
           <p>{{ document.route_step.name }}</p>
           <p>
             <span class="fas fa-exchange-alt" ng-if="document.route_step.type == 'APPROVE'"></span>
             <span class="fas fa-check-circle" ng-if="document.route_step.type == 'VALIDATE'"></span>
+            <span class="far fa-file" ng-if="document.route_step.type == 'RESUME_REVIEW'"></span>
             {{ 'workflow_type.' + document.route_step.type | translate }}
             <span class="label label-default"><acl data="document.route_step.target"></acl></span>
           </p>
+
           <p ng-show="document.route_step.transitionable">
+            <div class="ratings-wrapper" ng-show="document.route_step.type == 'RESUME_REVIEW'">
+              <div class="ratings" ng-repeat="category in ratingCategories">
+                <strong class="ratings-title">{{ category.name }}</strong><br>
+                <div class="ratings-stars">
+                  <input type="radio" id="star5-{{ category.id }}" name="{{ category.id }}" value="5" ng-model="category.value">
+                  <label for="star5-{{ category.id }}" title="text">5 stars</label>
+                  <input type="radio" id="star4-{{ category.id }}" name="{{ category.id }}" value="4" ng-model="category.value">
+                  <label for="star4-{{ category.id }}" title="text">4 stars</label>
+                  <input type="radio" id="star3-{{ category.id }}" name="{{ category.id }}" value="3" ng-model="category.value">
+                  <label for="star3-{{ category.id }}" title="text">3 stars</label>
+                  <input type="radio" id="star2-{{ category.id }}" name="{{ category.id }}" value="2" ng-model="category.value">
+                  <label for="star2-{{ category.id }}" title="text">2 stars</label>
+                  <input type="radio" id="star1-{{ category.id }}" name="{{ category.id }}" value="1" ng-model="category.value">
+                  <label for="star1-{{ category.id }}" title="text">1 star</label>
+                </div>
+              </div>
+            </div>
+          
             <textarea ng-model="workflowComment" maxlength="500" class="form-control mb-10"
                       ng-attr-placeholder="{{ 'document.view.workflow_comment' | translate }}"></textarea>
             <span class="btn btn-primary"
@@ -127,9 +206,16 @@
                   ng-click="validateWorkflow('REJECTED')">
               {{ 'workflow_transition.REJECTED' | translate }}
             </span>
+            <span class="btn btn-primary"
+                  ng-show="document.route_step.type == 'RESUME_REVIEW'"
+                  ng-click="validateWorkflow('REVIEWED')">
+              {{ 'workflow_transition.REVIEWED' | translate }}
+            </span>
           </p>
         </div>
       </div>
+
+  
 
       <p class="page-header page-header-side">
         <span class="fas fa-comments"></span>

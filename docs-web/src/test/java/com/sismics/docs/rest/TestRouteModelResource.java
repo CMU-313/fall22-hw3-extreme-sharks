@@ -121,7 +121,6 @@ public class TestRouteModelResource extends BaseJerseyTest {
         Assert.assertEquals(routeModelId, json.getString("id"));
         Assert.assertEquals("Workflow validation 2", json.getString("name"));
         Assert.assertEquals("[{\"type\":\"APPROVE\",\"transitions\":[{\"name\":\"APPROVED\",\"actions\":[{\"type\":\"ADD_TAG\",\"tag\":\"" + tagRouteId + "\"}]},{\"name\":\"REJECTED\",\"actions\":[]}],\"target\":{\"name\":\"administrators\",\"type\":\"GROUP\"},\"name\":\"Check the document's metadata\"}]", json.getString("steps"));
-
         // Delete the route model
         target().path("/routemodel/" + routeModelId)
                 .request()
@@ -137,5 +136,74 @@ public class TestRouteModelResource extends BaseJerseyTest {
                 .get(JsonObject.class);
         routeModels = json.getJsonArray("routemodels");
         Assert.assertEquals(1, routeModels.size());
+    }
+
+    /**
+     * Tests that we can create a new workflow with the resume review step.
+     */
+    @Test
+    public void testCreateWorkflowResumeReview() {
+        // Login admin
+        String adminToken = clientUtil.login("admin", "admin", false);
+
+        // Create a route model without actions
+        String stepsData = "[{\"type\":\"RESUME_REVIEW\",\"transitions\":[{\"name\":\"REVIEWED\",\"actions\":[]}],\"target\":{\"name\":\"administrators\",\"type\":\"GROUP\"},\"name\":\"Please review the resume\"}]";
+        JsonObject json = target().path("/routemodel").request()
+                .cookie(TokenBasedSecurityFilter.COOKIE_NAME, adminToken)
+                .put(Entity.form(new Form()
+                        .param("name", "My sample resume review workflow")
+                        .param("steps", stepsData)), JsonObject.class);
+        String routeModelId = json.getString("id");
+
+        // Get the route models
+        json = target().path("/routemodel/" + routeModelId)
+                .request()
+                .cookie(TokenBasedSecurityFilter.COOKIE_NAME, adminToken)
+                .get(JsonObject.class);
+        Assert.assertEquals(stepsData, json.getString("steps"));
+
+        // Delete the route model
+        target().path("/routemodel/" + routeModelId)
+                .request()
+                .cookie(TokenBasedSecurityFilter.COOKIE_NAME, adminToken)
+                .delete(JsonObject.class);
+    }
+
+    /**
+     * Tests that we can update an existing workflow with the resume review type
+     */
+    @Test
+    public void testUpdateWorkflowResumeReview() {
+        // Login admin
+        String adminToken = clientUtil.login("admin", "admin", false);
+
+        // Create a validation route model
+        JsonObject json = target().path("/routemodel").request()
+                .cookie(TokenBasedSecurityFilter.COOKIE_NAME, adminToken)
+                .put(Entity.form(new Form()
+                        .param("name", "My workflow")
+                        .param("steps", "[{\"type\":\"VALIDATE\",\"transitions\":[{\"name\":\"VALIDATED\",\"actions\":[]}],\"target\":{\"name\":\"administrators\",\"type\":\"GROUP\"},\"name\":\"Please validate\"}]")), JsonObject.class);
+        String routeModelId = json.getString("id");
+
+        // Change the route model steps
+        String newStepsData = "[{\"type\":\"RESUME_REVIEW\",\"transitions\":[{\"name\":\"REVIEWED\",\"actions\":[]}],\"target\":{\"name\":\"administrators\",\"type\":\"GROUP\"},\"name\":\"Please review the resume\"}]";
+        target().path("/routemodel/" + routeModelId).request()
+                .cookie(TokenBasedSecurityFilter.COOKIE_NAME, adminToken)
+                .post(Entity.form(new Form()
+                        .param("name", "My workflow")
+                        .param("steps", newStepsData)), JsonObject.class);
+
+        // Get the route model
+        json = target().path("/routemodel/" + routeModelId)
+                .request()
+                .cookie(TokenBasedSecurityFilter.COOKIE_NAME, adminToken)
+                .get(JsonObject.class);
+        Assert.assertEquals(newStepsData, json.getString("steps"));
+
+        // Delete the route model
+        target().path("/routemodel/" + routeModelId)
+                .request()
+                .cookie(TokenBasedSecurityFilter.COOKIE_NAME, adminToken)
+                .delete(JsonObject.class);
     }
 }

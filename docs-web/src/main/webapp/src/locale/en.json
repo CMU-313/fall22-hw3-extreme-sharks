@@ -145,6 +145,15 @@
         "acl_target": "For",
         "acl_permission": "Permission"
       },
+      "reviews": {
+        "reviews": "Reviews",
+        "ratings": "Ratings",
+        "comments": "Comments",
+        "no_workflow": "No workflow exists with a resume review step.",
+        "average_multiple": "Average of {{ numReviews }} reviews",
+        "average_single": "One review",
+        "average_none": "No reviews so far on this workflow."
+      },
       "activity": {
         "activity": "Activity",
         "message": "Every actions on this document are logged here."
@@ -341,8 +350,9 @@
         "type": "Step type",
         "type_approve": "Approve",
         "type_validate": "Validate",
+        "type_resume_review": "Resume Review",
         "target": "Assigned to",
-        "target_help": "<strong>Approve:</strong> Accept or reject the review<br/><strong>Validate:</strong> Review and continue the workflow",
+        "target_help": "<strong>Approve:</strong> Accept or reject the review<br/><strong>Validate:</strong> Review and continue the workflow<br/><strong>Resume Review:</strong> Review the different components of a resume",
         "add_step": "Add a workflow step",
         "actions": "What happens after?",
         "remove_action": "Remove action",
@@ -565,12 +575,14 @@
   },
   "workflow_type": {
     "VALIDATE": "Validation",
-    "APPROVE": "Approbation"
+    "APPROVE": "Approbation", 
+    "RESUME_REVIEW": "Resume Review"
   },
   "workflow_transition": {
     "APPROVED": "Approved",
     "REJECTED": "Rejected",
-    "VALIDATED": "Validated"
+    "VALIDATED": "Validated",
+    "REVIEWED": "Reviewed"
   },
   "validation": {
     "required": "Required",

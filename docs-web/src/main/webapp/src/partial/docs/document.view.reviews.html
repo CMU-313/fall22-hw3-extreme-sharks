@@ -1,0 +1,103 @@
+<div ng-if="reviewWorkflows">
+    <p class="lead mt" ng-if="reviewWorkflows.length === 0">
+        {{ 'document.view.reviews.no_workflow' | translate }}
+    </p>
+    <div class="workflow-reviews" ng-repeat="workflow in reviewWorkflows">
+        <h3>{{ workflow.name }}</h3>
+
+        <h4>{{ 'document.view.reviews.ratings' | translate }}</h4>
+        <p ng-if="workflow.numReviews > 1"
+           translate="document.view.reviews.average_multiple"
+           translate-values="{ numReviews: workflow.numReviews }"></p>
+        <p ng-if="workflow.numReviews === 1">
+            {{ 'document.view.reviews.average_single' | translate }}
+        </p>
+
+        <p ng-if="workflow.ratings.length === 0">
+            {{ 'document.view.reviews.average_none' | translate }}
+        </p>
+
+        <div class="review-criteria" ng-if="workflow.ratings.length > 0">
+            <div class="review-criterion" ng-repeat="(name, averageData) in workflow.averages">
+                <strong class="rating">{{ name }}</strong>
+                <br>
+                <div class="star-ratings">
+                    <div class="empty-ratings">
+                        <div class="fill-ratings"
+                             style="width: {{ (averageData.sum / averageData.count / 5) * 100 }}%;">
+                            <span>★★★★★</span>
+                        </div>
+                        <span>★★★★★</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div ng-if="workflow.comments.length > 0">
+            <h4>{{ 'document.view.reviews.comments' | translate }}</h4>
+            <div class="review-comments">
+                <blockquote ng-repeat="comment in workflow.comments">
+                    <p>{{ comment.contents }}</p>
+                    <figcaption>{{ comment.author }}</figcaption>
+                </blockquote>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .lead.mt {
+        margin-top: 1em;
+    }
+
+    .workflow-reviews h3 {
+        font-weight: 500;
+        margin-top: 1.2em;
+    }
+
+    .workflow-reviews h4 {
+        margin-top: 1.5em;
+    }
+
+    .workflow-reviews blockquote {
+        margin-bottom: 1em;
+    }
+
+    .workflow-reviews blockquote figcaption {
+        font-weight: 600;
+    }
+
+    .review-criteria {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+        gap: 16px 32px;
+        margin-bottom: 2em;
+    }
+
+    .star-ratings {
+        unicode-bidi: bidi-override;
+        color: #ccc;
+        font-size: 20px;
+        position: relative;
+        margin: 0;
+        padding: 0;
+    }
+
+    .fill-ratings {
+        color: #e7711b;
+        padding: 0;
+        position: absolute;
+        z-index: 1;
+        top: 0;
+        left: 0;
+        overflow: hidden;
+    }
+
+    .empty-ratings {
+        position: relative;
+        padding: 0;
+        z-index: 0;
+        display: inline-block;
+    }
+
+</style>

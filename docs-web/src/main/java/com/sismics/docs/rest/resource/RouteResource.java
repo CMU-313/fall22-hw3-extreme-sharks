@@ -7,6 +7,7 @@ import com.sismics.docs.core.dao.criteria.RouteStepCriteria;
 import com.sismics.docs.core.dao.dto.DocumentDto;
 import com.sismics.docs.core.dao.dto.RouteDto;
 import com.sismics.docs.core.dao.dto.RouteStepDto;
+import com.sismics.docs.core.model.jpa.Review;
 import com.sismics.docs.core.model.jpa.Route;
 import com.sismics.docs.core.model.jpa.RouteModel;
 import com.sismics.docs.core.model.jpa.RouteStep;
@@ -22,11 +23,12 @@ import javax.json.*;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Response;
 import java.io.StringReader;
+import java.util.LinkedList;
 import java.util.List;
 
 /**
  * Route REST resources.
- * 
+ *
  * @author bgamard
  */
 @Path("/route")
@@ -138,9 +140,14 @@ public class RouteResource extends BaseResource {
      * @apiParam {String} documentId Document ID
      * @apiParam {String} transition Route step transition
      * @apiParam {String} comment Route step comment
+     * @apiParam {Object[]} ratings The ratings created by the user in this workflow step (only for the REVIEWED transition).
+     *                              This field is encoded as JSON.
+     * @apiParam {String} ratings.category The category that a specific rating belongs to
+     * @apiParam {Number} ratings.value The value of a specific rating (Range: 1-5)
      * @apiSuccess {String} status Status OK
      * @apiError (client) ForbiddenError Access denied
      * @apiError (client) NotFound Document or route not found
+     * @apiError (client) ValidationError The query parameters don’t match the expected format
      * @apiPermission user
      * @apiVersion 1.5.0
      *
@@ -150,7 +157,8 @@ public class RouteResource extends BaseResource {
     @Path("validate")
     public Response validate(@FormParam("documentId") String documentId,
                              @FormParam("transition") String transitionStr,
-                             @FormParam("comment") String comment) {
+                             @FormParam("comment") String comment,
+                             @FormParam("ratings") String ratings) {
         if (!authenticate()) {
             throw new ForbiddenClientException();
         }
@@ -181,9 +189,40 @@ public class RouteResource extends BaseResource {
         RouteStepTransition routeStepTransition = RouteStepTransition.valueOf(transitionStr);
         if (routeStepDto.getType() == RouteStepType.VALIDATE && routeStepTransition != RouteStepTransition.VALIDATED
                 || routeStepDto.getType() == RouteStepType.APPROVE
-                && routeStepTransition != RouteStepTransition.APPROVED && routeStepTransition != RouteStepTransition.REJECTED) {
+                && routeStepTransition != RouteStepTransition.APPROVED && routeStepTransition != RouteStepTransition.REJECTED
+                || routeStepDto.getType() == RouteStepType.RESUME_REVIEW && routeStepTransition != RouteStepTransition.REVIEWED
+        ) {
             throw new ClientException("ValidationError", "Invalid transition for this route step type");
         }
+
+        // Create the new reviews
+        final List<Review> reviews = new LinkedList<>();
+        if (routeStepDto.getType() == RouteStepType.RESUME_REVIEW && ratings != null) {
+            try (JsonReader reader = Json.createReader(new StringReader(ratings))) {
+                JsonArray ratingsJson = reader.readArray();
+                for (int i = 0; i < ratingsJson.size(); i++) {
+                    // Validate the review
+                    JsonObject rating = ratingsJson.getJsonObject(i);
+                    String category = rating.getString("category");
+                    double value = rating.getJsonNumber("value").doubleValue();
+                    ValidationUtil.validateLength(category, "rating.category", 1, Review.CATEGORY_MAX_LENGTH, false);
+                    if (!(Review.RATING_MIN <= value && value <= Review.RATING_MAX)) {
+                        throw new ClientException("ValidationError", "Rating value not in valid range");
+                    }
+
+                    // Create the review
+                    Review review = new Review();
+                    review.setRouteStepId(routeStepDto.getId());
+                    review.setCategory(category);
+                    review.setValue(value);
+                    reviews.add(review);
+                }
+            } catch (JsonException | ClassCastException | NullPointerException e) {
+                throw new ClientException("ValidationError", "The ratings field doesn't contain valid JSON");
+            }
+        }
+        var reviewDao = new ReviewDao();
+        for (Review review : reviews) reviewDao.create(review);
 
         // Execute actions
         if (routeStepDto.getTransitions() != null) {
@@ -235,10 +274,10 @@ public class RouteResource extends BaseResource {
      * @apiSuccess {Number} routes.create_date Create date (timestamp)
      * @apiSuccess {Object[]} routes.steps Route steps
      * @apiSuccess {String} routes.steps.name Route step name
-     * @apiSuccess {String="APPROVE", "VALIDATE"} routes.steps.type Route step type
+     * @apiSuccess {String="APPROVE", "VALIDATE", "RESUME_REVIEW"} routes.steps.type Route step type
      * @apiSuccess {String} routes.steps.comment Route step comment
      * @apiSuccess {Number} routes.steps.end_date Route step end date (timestamp)
-     * @apiSuccess {String="APPROVED","REJECTED","VALIDATED"} routes.steps.transition Route step transition
+     * @apiSuccess {String="APPROVED","REJECTED","VALIDATED", "REVIEWED"} routes.steps.transition Route step transition
      * @apiSuccess {Object} routes.steps.validator_username Validator username
      * @apiSuccess {Object} routes.steps.target Route step target
      * @apiSuccess {String} routes.steps.target.id Route step target ID
